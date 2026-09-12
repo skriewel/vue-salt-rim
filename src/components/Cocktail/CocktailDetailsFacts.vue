@@ -18,6 +18,8 @@
                     </span>
                 </dd>
             </template>
+            <dt>Taps</dt>
+            <dd><CocktailTapWidget :cocktail-id="cocktail.id" /></dd>
             <template v-if="cocktail.public_id">
                 <dt>{{ t("public-link") }}</dt>
                 <dd>
@@ -80,6 +82,7 @@ import type { components } from "@/api/api";
 import Rating from "@/components/RatingActions.vue";
 import { useI18n } from "vue-i18n";
 import IconExternal from "@/components/Icons/IconExternal.vue";
+import CocktailTapWidget from "@/components/Cocktail/CocktailTapWidget.vue";
 import AppState from "@/AppState";
 
 type Cocktail = components["schemas"]["Cocktail"];
