@@ -10,7 +10,12 @@
             <template v-if="cocktail.rating">
                 <dt>{{ t("avg-rating") }}</dt>
                 <dd>
-                    <RouterLink :to="{ name: 'cocktails', query: { 'filter[user_rating_min]': cocktail.rating.average } }">{{ cocktail.rating.average }} ★</RouterLink>
+                    <span class="rating-breakdown">
+                        <RouterLink :to="{ name: 'cocktails', query: { 'filter[user_rating_min]': cocktail.rating.average } }">{{ cocktail.rating.average }} ★</RouterLink>
+                        <span v-if="isAdmin && ratingBreakdown.length > 0" class="rating-breakdown__tooltip" role="tooltip">
+                            <span v-for="entry in ratingBreakdown" :key="entry.name" class="rating-breakdown__entry">{{ entry.name }}: {{ entry.rating }} stars</span>
+                        </span>
+                    </span>
                 </dd>
             </template>
             <template v-if="cocktail.public_id">
@@ -70,17 +75,27 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import type { components } from "@/api/api";
 import Rating from "@/components/RatingActions.vue";
 import { useI18n } from "vue-i18n";
 import IconExternal from "@/components/Icons/IconExternal.vue";
+import AppState from "@/AppState";
 
 type Cocktail = components["schemas"]["Cocktail"];
+type RatingBreakdownEntry = {
+    name: string;
+    rating: number;
+};
 
 const { t } = useI18n();
+const appState = new AppState();
 const props = defineProps<{
     cocktail: Cocktail;
 }>();
+
+const isAdmin = computed(() => Boolean(appState.isAdmin()));
+const ratingBreakdown = computed(() => (((props.cocktail.rating as any)?.breakdown ?? []) as RatingBreakdownEntry[]));
 
 const emit = defineEmits<{
     (e: "rating-changed", rating: number): void;
@@ -94,3 +109,38 @@ function isValidUrl(input: string) {
     return /^https?:\/\//i.test(input);
 }
 </script>
+
+<style scoped>
+.rating-breakdown {
+    position: relative;
+    display: inline-block;
+}
+
+.rating-breakdown__tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    z-index: 20;
+    display: none;
+    min-width: 180px;
+    max-width: 320px;
+    padding: 0.55rem 0.7rem;
+    transform: translateX(-50%);
+    border-radius: var(--radius-2);
+    background: var(--clr-gray-900);
+    color: #fff;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.rating-breakdown:hover .rating-breakdown__tooltip,
+.rating-breakdown:focus-within .rating-breakdown__tooltip {
+    display: block;
+}
+
+.rating-breakdown__entry {
+    display: block;
+}
+</style>
