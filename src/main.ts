@@ -26,6 +26,58 @@ import nl_NL from "./locales/nl-NL";
 import cs_CZ from "./locales/cs-CZ";
 import fi_FI from "./locales/fi-FI";
 
+const JSON_IMPORT_METADATA_KEY = "jsonImportMetadata";
+
+router.beforeEach((to) => {
+    if (to.name !== "cocktails.form") {
+        return true;
+    }
+
+    const metadataRaw = sessionStorage.getItem(JSON_IMPORT_METADATA_KEY);
+    const scrapeResultRaw = sessionStorage.getItem("scrapeResult");
+
+    if (!metadataRaw || !scrapeResultRaw) {
+        return true;
+    }
+
+    try {
+        const metadata = JSON.parse(metadataRaw) as {
+            name?: string;
+            author?: string | null;
+            year?: string | null;
+            parent?: string | null;
+            parent_id?: number | null;
+        };
+        const scrapeResult = JSON.parse(scrapeResultRaw);
+
+        if (metadata.name && scrapeResult.name === metadata.name) {
+            if (metadata.author) {
+                scrapeResult.author = metadata.author;
+            }
+
+            if (metadata.year) {
+                scrapeResult.year = metadata.year;
+            }
+
+            if (metadata.parent && metadata.parent_id) {
+                scrapeResult.parent_cocktail = {
+                    id: metadata.parent_id,
+                    name: metadata.parent,
+                    slug: "",
+                };
+            }
+
+            sessionStorage.setItem("scrapeResult", JSON.stringify(scrapeResult));
+        }
+    } catch (error) {
+        console.warn("Unable to apply extended JSON import metadata", error);
+    } finally {
+        sessionStorage.removeItem(JSON_IMPORT_METADATA_KEY);
+    }
+
+    return true;
+});
+
 registerSW({ immediate: true });
 registerSwiperElements();
 
