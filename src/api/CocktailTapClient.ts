@@ -13,6 +13,26 @@ export interface CocktailTapList {
     };
 }
 
+export interface CocktailTapStat {
+    id: number;
+    name: string;
+    slug: string;
+    tap_count: number;
+    last_tapped_on: string;
+}
+
+export interface CocktailTapStatsScope {
+    most_tapped: CocktailTapStat[];
+    last_tapped: CocktailTapStat[];
+}
+
+export interface CocktailTapStats {
+    data: {
+        personal: CocktailTapStatsScope;
+        bar: CocktailTapStatsScope;
+    };
+}
+
 const apiBaseUrl = `${window.srConfig.API_URL}/api`;
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -46,6 +66,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 export default class CocktailTapClient {
     static async list(cocktailId: number): Promise<CocktailTapList> {
         return request(`/cocktails/${cocktailId}/taps`);
+    }
+
+    static async stats(): Promise<CocktailTapStats> {
+        return request(`/taps/stats`);
     }
 
     static async create(cocktailId: number, date?: string): Promise<{ data: CocktailTap }> {
