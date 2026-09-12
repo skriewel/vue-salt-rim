@@ -1,17 +1,16 @@
 <template>
     <div class="cocktail-tap-widget">
-        <Teleport to=".cocktail-details__actions">
-            <button
-                type="button"
-                class="button button--outline button--has-icon"
-                :disabled="isSaving"
-                :title="isSaving ? 'Tapping…' : 'Tap cocktail'"
-                :aria-label="isSaving ? 'Tapping cocktail' : 'Tap cocktail'"
-                @click="tapToday"
-            >
-                <IconCocktail />
-            </button>
-        </Teleport>
+        <button
+            ref="tapButton"
+            type="button"
+            class="button button--outline button--has-icon cocktail-tap-widget__action"
+            :disabled="isSaving"
+            :title="isSaving ? 'Tapping…' : 'Tap cocktail'"
+            :aria-label="isSaving ? 'Tapping cocktail' : 'Tap cocktail'"
+            @click="tapToday"
+        >
+            <IconCocktail />
+        </button>
         <div class="cocktail-tap-widget__summary">
             <span class="cocktail-tap-widget__count">{{ taps.meta.total }}×</span>
             <SaltRimDialog v-model="showHistory" @dialog-opened="fetchTaps">
@@ -61,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { nextTick, onMounted, ref } from "vue";
 import SaltRimDialog from "@/components/Dialog/SaltRimDialog.vue";
 import CocktailTapClient, { type CocktailTap, type CocktailTapList } from "@/api/CocktailTapClient";
 import { useSaltRimToast } from "@/composables/toast";
@@ -77,8 +76,16 @@ const showHistory = ref(false);
 const newTapDate = ref("");
 const editingTapId = ref<number | null>(null);
 const editingDate = ref("");
+const tapButton = ref<HTMLButtonElement | null>(null);
 
-onMounted(fetchTaps);
+onMounted(async () => {
+    await nextTick();
+    const actions = document.querySelector(".cocktail-details__actions");
+    if (actions && tapButton.value) {
+        actions.appendChild(tapButton.value);
+    }
+    await fetchTaps();
+});
 
 async function fetchTaps() {
     isLoading.value = true;
@@ -159,6 +166,11 @@ function formatDate(date: string): string {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
+}
+
+.cocktail-tap-widget__action :deep(svg) {
+    width: 24px;
+    height: 24px;
 }
 
 .cocktail-tap-widget__summary {
