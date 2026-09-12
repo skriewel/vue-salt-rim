@@ -5,7 +5,7 @@ import CocktailTapListFilters from "../components/Cocktail/CocktailTapListFilter
 
 <template>
     <main>
-        <CocktailTapListFilters />
         <CocktailIndex />
+        <CocktailTapListFilters />
     </main>
 </template>
