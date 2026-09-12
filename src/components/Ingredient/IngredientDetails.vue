@@ -51,6 +51,22 @@
                             </a>
                         </template>
                     </ToggleIngredientBarShelf>
+                    <ToggleIngredientInventory :ingredient="ingredient as Ingredient">
+                        <template v-slot="{ isLoading, inList, toggle, inventory }">
+                            <a href="#" class="block-container block-container--hover shelf-actions__action" @click.prevent="toggle">
+                                <div>
+                                    <IconBarShelf></IconBarShelf>
+                                    <IconCheck v-if="inList" class="shelf-actions__action__active"></IconCheck>
+                                </div>
+                                <template v-if="!isLoading">
+                                    <span v-if="!inList">Add to Inventory</span>
+                                    <span v-else>Remove from Inventory</span>
+                                </template>
+                                <span v-else>{{ $t("loading") }}...</span>
+                                <small>{{ inventory.name }}</small>
+                            </a>
+                        </template>
+                    </ToggleIngredientInventory>
                     <ToggleIngredientShoppingCart v-if="ingredient.in_shopping_list !== undefined" :ingredient="ingredient as Ingredient" v-model="ingredient.in_shopping_list">
                         <template v-slot="{ isLoading, inList, toggle }">
                             <a href="#" class="block-container block-container--hover shelf-actions__action" @click.prevent="toggle">
@@ -212,6 +228,7 @@ import PageHeader from "../PageHeader.vue";
 import BarAssistantClient from "@/api/BarAssistantClient";
 import ToggleIngredientShoppingCart from "@/components/ToggleIngredientShoppingCart.vue";
 import ToggleIngredientBarShelf from "../ToggleIngredientBarShelf.vue";
+import ToggleIngredientInventory from "../ToggleIngredientInventory.vue";
 import Dropdown from "@/components/SaltRimDropdown.vue";
 import { useTitle } from "@/composables/title";
 import IconBarShelf from "../Icons/IconBarShelf.vue";
@@ -542,8 +559,6 @@ watch(
 }
 
 .ingredient-details__prices__list__item {
-    /* background-color: var(--clr-gray-100); */
-    /* padding: var(--gap-size-2); */
     border-radius: var(--radius-2);
 }
 
