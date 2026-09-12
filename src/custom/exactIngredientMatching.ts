@@ -14,13 +14,16 @@ BarAssistantClient.getIngredients = async (query = {}) => {
         return originalGetIngredients(query);
     }
 
-    // Some backend versions return prefix/fuzzy matches for name_exact. Ask for
-    // enough candidates and enforce exact matching in Salt Rim before the
-    // importer decides whether an ingredient already exists.
-    const response = await originalGetIngredients({
-        ...queryRecord,
-        per_page: 100,
-    });
+    // Do not rely on the backend's name_exact semantics here. Some backend
+    // versions return prefix/fuzzy matches (for example "Lime Juice Cordial"
+    // for "Lime juice"). Replace name_exact with the normal name search, fetch
+    // the candidate set, then enforce exact matching in Salt Rim itself.
+    const searchQuery = { ...queryRecord };
+    delete searchQuery["filter[name_exact]"];
+    searchQuery["filter[name]"] = exactName;
+    searchQuery.per_page = 100;
+
+    const response = await originalGetIngredients(searchQuery);
 
     if (!response?.data) {
         return response;
