@@ -2,6 +2,8 @@ import { ref } from "vue";
 import type { ImportResult } from "@/schema/ImportResult";
 import type { CocktailRecipeDraft04 } from "@/schema/draft4";
 
+const IMPORT_METADATA_KEY = "jsonImportMetadata";
+
 export function useJsonImport() {
     const isLoading = ref(false);
     const result = ref<ImportResult | null>(null);
@@ -56,7 +58,19 @@ export function useJsonImport() {
                         };
                     }) ?? [],
             };
+
+            sessionStorage.setItem(
+                IMPORT_METADATA_KEY,
+                JSON.stringify({
+                    name: parsed.name,
+                    author: parsed.author ?? null,
+                    year: parsed.year == null ? null : String(parsed.year),
+                    parent: parsed.parent ?? null,
+                    parent_id: parsed.parent_id ?? null,
+                }),
+            );
         } catch (e) {
+            sessionStorage.removeItem(IMPORT_METADATA_KEY);
             error.value = e instanceof Error ? e : new Error("Unable to parse JSON");
             result.value = null;
             throw error.value;
@@ -69,6 +83,7 @@ export function useJsonImport() {
         isLoading.value = false;
         result.value = null;
         error.value = null;
+        sessionStorage.removeItem(IMPORT_METADATA_KEY);
     }
 
     return {
