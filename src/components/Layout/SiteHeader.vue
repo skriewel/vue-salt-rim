@@ -70,6 +70,7 @@
                 <RouterLink :to="{ name: 'home' }" exact-active-class="current-nav">{{ t("shelf.title") }}</RouterLink>
                 <RouterLink :to="{ name: 'cocktails' }" :class="{ 'current-nav': route.path.startsWith('/cocktails') }">{{ t("cocktail.cocktails") }}</RouterLink>
                 <RouterLink :to="{ name: 'ingredients' }" :class="{ 'current-nav': route.path.startsWith('/ingredients') }">{{ t("ingredient.ingredients") }}</RouterLink>
+                <RouterLink :to="{ name: 'member-inventories' }" :class="{ 'current-nav': route.path.startsWith('/my-shelf') }">My Shelf</RouterLink>
                 <RouterLink :to="{ name: 'shopping-list.index' }" :class="{ 'current-nav': route.path.startsWith('/shopping-list') }">{{ t("your-shopping-list") }}</RouterLink>
                 <RouterLink :to="{ name: 'collections.cocktails' }" :class="{ 'current-nav': route.path.startsWith('/collections') }">{{ t("collections.title") }}</RouterLink>
                 <RouterLink v-if="appState.isAdmin()" :to="{ name: 'menu' }" :class="{ 'current-nav': route.path.startsWith('/menu') }">{{ t("menu.title") }}</RouterLink>
