@@ -19,6 +19,7 @@ export interface CocktailTapStat {
     slug: string;
     tap_count: number;
     last_tapped_on: string;
+    images: { id: number }[];
 }
 
 export interface CocktailTapStatsScope {
