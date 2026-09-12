@@ -27,6 +27,10 @@ useTitle("Inventory");
 const selectedInventory = computed(() => inventories.value.find((inventory) => inventory.id === selectedInventoryId.value) ?? null);
 const currentIngredientIds = computed(() => new Set(ingredients.value.map((ingredient) => ingredient.id)));
 const availableSearchResults = computed(() => ingredientSearchResults.value.filter((ingredient) => !currentIngredientIds.value.has(ingredient.id)));
+const inventoryCocktailQuery = computed(() => ({
+    inventory: "1",
+    ...(selectedInventoryId.value !== null ? { inventory_id: String(selectedInventoryId.value) } : {}),
+}));
 
 async function loadInventories() {
     isLoading.value = true;
@@ -122,7 +126,7 @@ loadInventories();
     <PageHeader>
         Inventory
         <template #actions>
-            <RouterLink class="button button--outline" :to="{ name: 'cocktails', query: { inventory: '1' } }">Cocktails I can make</RouterLink>
+            <RouterLink class="button button--outline" :to="{ name: 'cocktails', query: inventoryCocktailQuery }">Cocktails I can make</RouterLink>
         </template>
     </PageHeader>
 
