@@ -91,11 +91,6 @@ function onRated(rating: number) {
 }
 
 function isValidUrl(input: string) {
-    try {
-        new URL(input.startsWith("http") ? input : `https://${input}`);
-        return true;
-    } catch (err) {
-        return false;
-    }
+    return /^https?:\/\//i.test(input);
 }
 </script>
