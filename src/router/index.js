@@ -251,6 +251,12 @@ const router = createRouter({
                     component: () => import("../views/MenuView.vue"),
                 },
                 {
+                    path: "/my-shelf",
+                    name: "member-inventories",
+                    component: () => import("../views/MemberInventoriesView.vue"),
+                    meta: { requiresBar: true },
+                },
+                {
                     path: "/shopping-list",
                     name: "shopping-list.index",
                     component: () => import("../views/ShoppingListView.vue"),
