@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import CocktailTapClient, { type CocktailTapStatsScope } from "@/api/CocktailTapClient";
+import CocktailThumb from "@/components/Cocktail/CocktailThumb.vue";
 import ListItemContainer from "@/components/ListItemContainer.vue";
 import OverlayLoader from "@/components/OverlayLoader.vue";
 
@@ -41,6 +42,9 @@ onMounted(loadStats);
                         :key="`personal-most-${cocktail.id}`"
                         :to="{ name: 'cocktails.show', params: { id: cocktail.slug } }"
                     >
+                        <template #image>
+                            <CocktailThumb :cocktail="cocktail"></CocktailThumb>
+                        </template>
                         <template #content>
                             <h5 class="sr-list-item-title">{{ cocktail.name }}</h5>
                             <p>{{ cocktail.tap_count }} taps · last {{ formatDate(cocktail.last_tapped_on) }}</p>
@@ -57,6 +61,9 @@ onMounted(loadStats);
                         :key="`personal-last-${cocktail.id}`"
                         :to="{ name: 'cocktails.show', params: { id: cocktail.slug } }"
                     >
+                        <template #image>
+                            <CocktailThumb :cocktail="cocktail"></CocktailThumb>
+                        </template>
                         <template #content>
                             <h5 class="sr-list-item-title">{{ cocktail.name }}</h5>
                             <p>{{ formatDate(cocktail.last_tapped_on) }} · {{ cocktail.tap_count }} total taps</p>
@@ -80,6 +87,9 @@ onMounted(loadStats);
                         :key="`bar-most-${cocktail.id}`"
                         :to="{ name: 'cocktails.show', params: { id: cocktail.slug } }"
                     >
+                        <template #image>
+                            <CocktailThumb :cocktail="cocktail"></CocktailThumb>
+                        </template>
                         <template #content>
                             <h5 class="sr-list-item-title">{{ cocktail.name }}</h5>
                             <p>{{ cocktail.tap_count }} taps · last {{ formatDate(cocktail.last_tapped_on) }}</p>
@@ -96,6 +106,9 @@ onMounted(loadStats);
                         :key="`bar-last-${cocktail.id}`"
                         :to="{ name: 'cocktails.show', params: { id: cocktail.slug } }"
                     >
+                        <template #image>
+                            <CocktailThumb :cocktail="cocktail"></CocktailThumb>
+                        </template>
                         <template #content>
                             <h5 class="sr-list-item-title">{{ cocktail.name }}</h5>
                             <p>{{ formatDate(cocktail.last_tapped_on) }} · {{ cocktail.tap_count }} total taps</p>
@@ -119,6 +132,10 @@ onMounted(loadStats);
 .tap-stats__scope {
     position: relative;
     min-width: 0;
+}
+
+.tap-stats__scope .page-subtitle {
+    margin-bottom: var(--gap-size-2);
 }
 
 .tap-stats__subtitle {
