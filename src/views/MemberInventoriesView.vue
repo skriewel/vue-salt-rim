@@ -123,65 +123,67 @@ loadInventories();
 </script>
 
 <template>
-    <PageHeader>
-        Inventory
-        <template #actions>
-            <RouterLink class="button button--outline" :to="{ name: 'cocktails', query: inventoryCocktailQuery }">Cocktails I can make</RouterLink>
-        </template>
-    </PageHeader>
+    <main>
+        <PageHeader>
+            Inventory
+            <template #actions>
+                <RouterLink class="button button--outline" :to="{ name: 'cocktails', query: inventoryCocktailQuery }">Cocktails I can make</RouterLink>
+            </template>
+        </PageHeader>
 
-    <div class="member-inventory-page">
-        <OverlayLoader v-if="isLoading" />
+        <div class="member-inventory-page">
+            <OverlayLoader v-if="isLoading" />
 
-        <EmptyState v-if="!isLoading && inventories.length === 0">
-            No personal inventories are available for this bar.
-        </EmptyState>
+            <EmptyState v-if="!isLoading && inventories.length === 0">
+                No personal inventories are available for this bar.
+            </EmptyState>
 
-        <template v-else-if="inventories.length > 0">
-            <div v-if="inventories.length > 1" class="inventory-selector block-container block-container--padded">
-                <label for="member-inventory">Inventory</label>
-                <select id="member-inventory" v-model="selectedInventoryId" class="form-select" @change="loadSelectedInventory">
-                    <option v-for="inventory in inventories" :key="inventory.id" :value="inventory.id">
-                        {{ inventory.name }}
-                    </option>
-                </select>
-            </div>
+            <template v-else-if="inventories.length > 0">
+                <div v-if="inventories.length > 1" class="inventory-selector block-container block-container--padded">
+                    <label for="member-inventory">Inventory</label>
+                    <select id="member-inventory" v-model="selectedInventoryId" class="form-select" @change="loadSelectedInventory">
+                        <option v-for="inventory in inventories" :key="inventory.id" :value="inventory.id">
+                            {{ inventory.name }}
+                        </option>
+                    </select>
+                </div>
 
-            <section>
-                <h3 class="page-subtitle">{{ selectedInventory?.name ?? "Inventory" }} ingredients</h3>
+                <section>
+                    <h3 class="page-subtitle">{{ selectedInventory?.name ?? "Inventory" }} ingredients</h3>
 
-                <div class="block-container block-container--padded ingredient-search">
-                    <div class="ingredient-search__controls">
-                        <input
-                            v-model="ingredientSearch"
-                            class="form-input"
-                            type="search"
-                            placeholder="Search ingredients to add"
-                            @keyup.enter="searchIngredients"
-                        />
-                        <button type="button" class="button button--dark" :disabled="isSearching" @click="searchIngredients">
-                            Search
-                        </button>
-                    </div>
+                    <div class="block-container block-container--padded ingredient-search">
+                        <div class="ingredient-search__controls">
+                            <input
+                                v-model="ingredientSearch"
+                                class="form-input"
+                                type="search"
+                                placeholder="Search ingredients to add"
+                                @keyup.enter="searchIngredients"
+                            />
+                            <button type="button" class="button button--dark" :disabled="isSearching" @click="searchIngredients">
+                                Search
+                            </button>
+                        </div>
 
-                    <div v-if="availableSearchResults.length > 0" class="inventory-list ingredient-search__results">
-                        <div v-for="ingredient in availableSearchResults" :key="ingredient.id" class="inventory-list__item">
-                            <RouterLink :to="{ name: 'ingredients.show', params: { id: ingredient.slug } }">{{ ingredient.name }}</RouterLink>
-                            <button type="button" class="button button--outline" @click="addIngredient(ingredient)">Add</button>
+                        <div v-if="availableSearchResults.length > 0" class="inventory-list ingredient-search__results">
+                            <div v-for="ingredient in availableSearchResults" :key="ingredient.id" class="inventory-list__item">
+                                <RouterLink :to="{ name: 'ingredients.show', params: { id: ingredient.slug } }">{{ ingredient.name }}</RouterLink>
+                                <button type="button" class="button button--outline" @click="addIngredient(ingredient)">Add</button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div v-if="ingredients.length > 0" class="inventory-list">
-                    <div v-for="ingredient in ingredients" :key="ingredient.id" class="block-container inventory-list__item">
-                        <RouterLink :to="{ name: 'ingredients.show', params: { id: ingredient.slug } }">{{ ingredient.name }}</RouterLink>
-                        <button type="button" class="button button--outline" @click="removeIngredient(ingredient)">Remove</button>
+                    <div v-if="ingredients.length > 0" class="inventory-list">
+                        <div v-for="ingredient in ingredients" :key="ingredient.id" class="block-container inventory-list__item">
+                            <RouterLink :to="{ name: 'ingredients.show', params: { id: ingredient.slug } }">{{ ingredient.name }}</RouterLink>
+                            <button type="button" class="button button--outline" @click="removeIngredient(ingredient)">Remove</button>
+                        </div>
                     </div>
-                </div>
-                <EmptyState v-else-if="!isLoading">No ingredients in this inventory.</EmptyState>
-            </section>
-        </template>
-    </div>
+                    <EmptyState v-else-if="!isLoading">No ingredients in this inventory.</EmptyState>
+                </section>
+            </template>
+        </div>
+    </main>
 </template>
 
 <style scoped>
