@@ -12,6 +12,7 @@ let clearButton: HTMLButtonElement | null = null;
 let collapseButton: HTMLButtonElement | null = null;
 let filterBody: HTMLElement | null = null;
 let isCollapsed = true;
+let originalFetch: typeof window.fetch | null = null;
 
 function formatLocalDate(date: Date): string {
     const year = date.getFullYear();
@@ -109,7 +110,6 @@ function syncControls() {
 
     if (clearButton) clearButton.style.display = hasActiveFilter ? "" : "none";
 
-    // Match SearchRefinement: an active radio refinement starts expanded.
     if (hasActiveFilter && isCollapsed) {
         isCollapsed = false;
         renderCollapsedState();
@@ -218,7 +218,50 @@ function installFilterGroup(): boolean {
     return true;
 }
 
+function copyTapFiltersToCocktailRequest(url: URL) {
+    const pageParams = new URLSearchParams(window.location.search);
+    const keys = ["filter[tapped_after]", "filter[tapped_before]", "filter[never_tapped]"];
+
+    for (const key of keys) {
+        url.searchParams.delete(key);
+        const value = pageParams.get(key);
+        if (value !== null && value !== "") {
+            url.searchParams.set(key, value);
+        }
+    }
+}
+
+function installCocktailRequestFilterBridge() {
+    if (originalFetch) return;
+
+    originalFetch = window.fetch.bind(window);
+    window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+        const sourceUrl = input instanceof Request ? input.url : input instanceof URL ? input.toString() : String(input);
+        const url = new URL(sourceUrl, window.location.origin);
+        const apiPath = new URL(window.srConfig.API_URL + "/api/cocktails", window.location.origin).pathname.replace(/\/$/, "");
+
+        if (url.pathname.replace(/\/$/, "") !== apiPath) {
+            return originalFetch!(input, init);
+        }
+
+        copyTapFiltersToCocktailRequest(url);
+
+        if (input instanceof Request) {
+            return originalFetch!(new Request(url.toString(), input), init);
+        }
+
+        return originalFetch!(url.toString(), init);
+    }) as typeof window.fetch;
+}
+
+function uninstallCocktailRequestFilterBridge() {
+    if (!originalFetch) return;
+    window.fetch = originalFetch;
+    originalFetch = null;
+}
+
 async function installControls() {
+    installCocktailRequestFilterBridge();
     await nextTick();
     installSortOption();
 
@@ -241,6 +284,7 @@ watch(() => route.fullPath, () => {
 onBeforeUnmount(() => {
     filterRoot?.remove();
     sortOption?.remove();
+    uninstallCocktailRequestFilterBridge();
 });
 </script>
 
