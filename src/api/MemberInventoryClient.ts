@@ -58,13 +58,31 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     return (await response.json()) as T;
 }
 
+async function requestAllPages<T>(path: string): Promise<ApiCollection<T>> {
+    const separator = path.includes("?") ? "&" : "?";
+    const first = await request<ApiCollection<T>>(`${path}${separator}per_page=100&page=1`);
+    const lastPage = first.meta?.last_page ?? 1;
+
+    if (lastPage <= 1) {
+        return first;
+    }
+
+    const data = [...first.data];
+    for (let page = 2; page <= lastPage; page++) {
+        const response = await request<ApiCollection<T>>(`${path}${separator}per_page=100&page=${page}`);
+        data.push(...response.data);
+    }
+
+    return { ...first, data };
+}
+
 export default class MemberInventoryClient {
     static async getInventories(userId: number): Promise<ApiCollection<MemberInventory>> {
         return request(`/members/${userId}/inventories`);
     }
 
     static async getIngredients(userId: number, inventoryId: number): Promise<ApiCollection<MemberInventoryIngredient>> {
-        return request(`/members/${userId}/inventories/${inventoryId}/ingredients?per_page=500`);
+        return requestAllPages(`/members/${userId}/inventories/${inventoryId}/ingredients`);
     }
 
     static async addIngredients(userId: number, inventoryId: number, ingredientIds: number[]): Promise<void> {
@@ -82,6 +100,6 @@ export default class MemberInventoryClient {
     }
 
     static async getCocktails(userId: number, inventoryId: number): Promise<ApiCollection<MemberInventoryCocktail>> {
-        return request(`/members/${userId}/inventories/${inventoryId}/cocktails?per_page=500`);
+        return requestAllPages(`/members/${userId}/inventories/${inventoryId}/cocktails`);
     }
 }
