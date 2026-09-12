@@ -13,6 +13,7 @@ let clearButton: HTMLButtonElement | null = null;
 let collapseButton: HTMLButtonElement | null = null;
 let filterBody: HTMLElement | null = null;
 let isCollapsed = true;
+let refinementObserver: MutationObserver | null = null;
 
 const originalGetCocktails = BarAssistantClient.getCocktails.bind(BarAssistantClient);
 let clientHookInstalled = false;
@@ -242,6 +243,22 @@ function installExtraExistingFilterOptions(): boolean {
     return Boolean(document.getElementById("custom-total-ingredients-max3") && document.getElementById("custom-user-rating-none"));
 }
 
+function installRefinementObserver() {
+    if (refinementObserver) return;
+
+    const root = document.querySelector<HTMLElement>(".resource-search__refinements__body");
+    if (!root) return;
+
+    refinementObserver = new MutationObserver(() => {
+        installExtraExistingFilterOptions();
+    });
+
+    refinementObserver.observe(root, {
+        childList: true,
+        subtree: true,
+    });
+}
+
 function installFilterGroup(): boolean {
     if (document.getElementById("tap-last-tapped-refinement")) return true;
 
@@ -337,23 +354,10 @@ async function installControls() {
     installCocktailClientFilterBridge();
     await nextTick();
 
+    installRefinementObserver();
     installSortOption();
-    let extraOptionsInstalled = installExtraExistingFilterOptions();
-    let tapGroupInstalled = installFilterGroup();
-
-    if (extraOptionsInstalled && tapGroupInstalled) return;
-
-    let attempts = 0;
-    const timer = window.setInterval(() => {
-        attempts++;
-        installSortOption();
-        extraOptionsInstalled = installExtraExistingFilterOptions();
-        tapGroupInstalled = installFilterGroup();
-
-        if ((extraOptionsInstalled && tapGroupInstalled) || attempts >= 30) {
-            window.clearInterval(timer);
-        }
-    }, 100);
+    installExtraExistingFilterOptions();
+    installFilterGroup();
 }
 
 onMounted(installControls);
@@ -367,6 +371,8 @@ onBeforeUnmount(() => {
     sortOption?.remove();
     document.getElementById("custom-total-ingredients-max3")?.closest(".resource-search__refinements__refinement__item")?.remove();
     document.getElementById("custom-user-rating-none")?.closest(".resource-search__refinements__refinement__item")?.remove();
+    refinementObserver?.disconnect();
+    refinementObserver = null;
     uninstallCocktailClientFilterBridge();
 });
 </script>
