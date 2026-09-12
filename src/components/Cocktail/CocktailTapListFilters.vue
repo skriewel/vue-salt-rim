@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import BarAssistantClient from "@/api/BarAssistantClient";
 import qs from "qs";
 
 const route = useRoute();
@@ -12,7 +13,49 @@ let clearButton: HTMLButtonElement | null = null;
 let collapseButton: HTMLButtonElement | null = null;
 let filterBody: HTMLElement | null = null;
 let isCollapsed = true;
-let originalFetch: typeof window.fetch | null = null;
+
+const originalGetCocktails = BarAssistantClient.getCocktails.bind(BarAssistantClient);
+let clientHookInstalled = false;
+
+function getTapFiltersFromLocation(): Record<string, string> {
+    const state = qs.parse(window.location.search.replace(/^\?/, "")) as any;
+    const filter = state.filter ?? {};
+    const result: Record<string, string> = {};
+
+    if (filter.tapped_after) result.tapped_after = String(filter.tapped_after);
+    if (filter.tapped_before) result.tapped_before = String(filter.tapped_before);
+    if (filter.never_tapped !== undefined && filter.never_tapped !== null && String(filter.never_tapped) !== "") {
+        result.never_tapped = String(filter.never_tapped);
+    }
+
+    return result;
+}
+
+function installCocktailClientFilterBridge() {
+    if (clientHookInstalled) return;
+
+    BarAssistantClient.getCocktails = async function (query: any = {}) {
+        const tapFilters = getTapFiltersFromLocation();
+        const mergedQuery: any = { ...query };
+
+        if (Object.keys(tapFilters).length > 0) {
+            mergedQuery.filter = {
+                ...(query?.filter ?? {}),
+                ...tapFilters,
+            };
+        }
+
+        return originalGetCocktails(mergedQuery);
+    };
+
+    clientHookInstalled = true;
+}
+
+function uninstallCocktailClientFilterBridge() {
+    if (!clientHookInstalled) return;
+    BarAssistantClient.getCocktails = originalGetCocktails as typeof BarAssistantClient.getCocktails;
+    clientHookInstalled = false;
+}
 
 function formatLocalDate(date: Date): string {
     const year = date.getFullYear();
@@ -218,50 +261,8 @@ function installFilterGroup(): boolean {
     return true;
 }
 
-function copyTapFiltersToCocktailRequest(url: URL) {
-    const pageParams = new URLSearchParams(window.location.search);
-    const keys = ["filter[tapped_after]", "filter[tapped_before]", "filter[never_tapped]"];
-
-    for (const key of keys) {
-        url.searchParams.delete(key);
-        const value = pageParams.get(key);
-        if (value !== null && value !== "") {
-            url.searchParams.set(key, value);
-        }
-    }
-}
-
-function installCocktailRequestFilterBridge() {
-    if (originalFetch) return;
-
-    originalFetch = window.fetch.bind(window);
-    window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
-        const sourceUrl = input instanceof Request ? input.url : input instanceof URL ? input.toString() : String(input);
-        const url = new URL(sourceUrl, window.location.origin);
-        const apiPath = new URL(window.srConfig.API_URL + "/api/cocktails", window.location.origin).pathname.replace(/\/$/, "");
-
-        if (url.pathname.replace(/\/$/, "") !== apiPath) {
-            return originalFetch!(input, init);
-        }
-
-        copyTapFiltersToCocktailRequest(url);
-
-        if (input instanceof Request) {
-            return originalFetch!(new Request(url.toString(), input), init);
-        }
-
-        return originalFetch!(url.toString(), init);
-    }) as typeof window.fetch;
-}
-
-function uninstallCocktailRequestFilterBridge() {
-    if (!originalFetch) return;
-    window.fetch = originalFetch;
-    originalFetch = null;
-}
-
 async function installControls() {
-    installCocktailRequestFilterBridge();
+    installCocktailClientFilterBridge();
     await nextTick();
     installSortOption();
 
@@ -284,7 +285,7 @@ watch(() => route.fullPath, () => {
 onBeforeUnmount(() => {
     filterRoot?.remove();
     sortOption?.remove();
-    uninstallCocktailRequestFilterBridge();
+    uninstallCocktailClientFilterBridge();
 });
 </script>
 
