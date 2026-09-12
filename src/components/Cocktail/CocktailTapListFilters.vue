@@ -8,6 +8,10 @@ const router = useRouter();
 
 let filterRoot: HTMLElement | null = null;
 let sortOption: HTMLOptionElement | null = null;
+let clearButton: HTMLButtonElement | null = null;
+let collapseButton: HTMLButtonElement | null = null;
+let filterBody: HTMLElement | null = null;
+let isCollapsed = true;
 
 function formatLocalDate(date: Date): string {
     const year = date.getFullYear();
@@ -80,11 +84,36 @@ function updatePeriod(period: string) {
     router.push({ query: state });
 }
 
+function chevronSvg(collapsed: boolean): string {
+    return collapsed
+        ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M10.8284 12.0007L15.7782 16.9504L14.364 18.3646L8 12.0007L14.364 5.63672L15.7782 7.05093L10.8284 12.0007Z"></path></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z"></path></svg>';
+}
+
+function clearSvg(): string {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"></path></svg>';
+}
+
+function renderCollapsedState() {
+    if (filterBody) filterBody.style.display = isCollapsed ? "none" : "";
+    if (collapseButton) collapseButton.innerHTML = chevronSvg(isCollapsed);
+}
+
 function syncControls() {
     const currentPeriod = getCurrentPeriod();
+    const hasActiveFilter = currentPeriod !== "any";
+
     filterRoot?.querySelectorAll<HTMLInputElement>('input[name="tap-last-tapped"]').forEach((input) => {
         input.checked = input.value === currentPeriod;
     });
+
+    if (clearButton) clearButton.style.display = hasActiveFilter ? "" : "none";
+
+    // Match SearchRefinement: an active radio refinement starts expanded.
+    if (hasActiveFilter && isCollapsed) {
+        isCollapsed = false;
+        renderCollapsedState();
+    }
 }
 
 function installSortOption() {
@@ -116,22 +145,40 @@ function installFilterGroup(): boolean {
 
     const title = document.createElement("div");
     title.className = "resource-search__refinements__refinement__title";
-    title.innerHTML = `<h4>Last tapped</h4>`;
+    title.innerHTML = '<h4>Last tapped</h4>';
 
     const actions = document.createElement("div");
     actions.className = "resource-search__refinements__refinement__title__actions";
-    const clear = document.createElement("button");
-    clear.type = "button";
-    clear.className = "button";
-    clear.title = "Clear";
-    clear.textContent = "×";
-    clear.addEventListener("click", () => updatePeriod("any"));
-    actions.append(clear);
+
+    clearButton = document.createElement("button");
+    clearButton.type = "button";
+    clearButton.className = "button";
+    clearButton.title = "Clear";
+    clearButton.innerHTML = clearSvg();
+    clearButton.style.padding = "0";
+    clearButton.style.margin = "0";
+    clearButton.style.width = "auto";
+    clearButton.style.height = "auto";
+    clearButton.addEventListener("click", () => updatePeriod("any"));
+
+    collapseButton = document.createElement("button");
+    collapseButton.type = "button";
+    collapseButton.className = "button";
+    collapseButton.style.padding = "0";
+    collapseButton.style.margin = "0";
+    collapseButton.style.width = "auto";
+    collapseButton.style.height = "auto";
+    collapseButton.addEventListener("click", () => {
+        isCollapsed = !isCollapsed;
+        renderCollapsedState();
+    });
+
+    actions.append(clearButton, collapseButton);
     title.append(actions);
     filterRoot.append(title);
 
-    const body = document.createElement("div");
-    body.className = "resource-search__refinements__refinement__body";
+    filterBody = document.createElement("div");
+    filterBody.className = "resource-search__refinements__refinement__body";
 
     const options = [
         ["today", "Today"],
@@ -159,11 +206,14 @@ function installFilterGroup(): boolean {
         text.textContent = label;
 
         row.append(input, text);
-        body.append(row);
+        filterBody.append(row);
     }
 
-    filterRoot.append(body);
+    filterRoot.append(filterBody);
     favoriteRefinement.insertAdjacentElement("afterend", filterRoot);
+
+    isCollapsed = getCurrentPeriod() === "any";
+    renderCollapsedState();
     syncControls();
     return true;
 }
