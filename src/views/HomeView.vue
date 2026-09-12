@@ -6,8 +6,14 @@ import TapStats from "../components/Shelf/TapStats.vue";
 <template>
     <main>
         <Index />
-        <div class="shelf-container">
+        <div class="home-tap-stats">
             <TapStats />
         </div>
     </main>
 </template>
+
+<style scoped>
+.home-tap-stats {
+    margin-top: var(--gap-size-4);
+}
+</style>
