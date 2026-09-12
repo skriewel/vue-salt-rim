@@ -2,12 +2,22 @@
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import qs from "qs";
+import Refinement from "@/components/Search/SearchRefinement.vue";
 
 const route = useRoute();
 const router = useRouter();
 
-const period = ref("any");
-const tapSort = ref("default");
+const period = ref<any>(null);
+
+const refinements = [
+    { id: "today", value: "today", name: "Today" },
+    { id: "7d", value: "7d", name: "Last 7 days" },
+    { id: "30d", value: "30d", name: "Last 30 days" },
+    { id: "3m", value: "3m", name: "Last 3 months" },
+    { id: "12m", value: "12m", name: "Last 12 months" },
+    { id: "older12m", value: "older12m", name: "More than 12 months ago" },
+    { id: "never", value: "never", name: "Never" },
+];
 
 function formatLocalDate(date: Date): string {
     const year = date.getFullYear();
@@ -30,9 +40,15 @@ function readState() {
 
     if (String(filter.never_tapped ?? "") === "true" || String(filter.never_tapped ?? "") === "1") {
         period.value = "never";
-    } else if (filter.tapped_before && !filter.tapped_after) {
+        return;
+    }
+
+    if (filter.tapped_before && !filter.tapped_after) {
         period.value = "older12m";
-    } else if (filter.tapped_after) {
+        return;
+    }
+
+    if (filter.tapped_after) {
         const after = String(filter.tapped_after);
         const values: Record<string, string> = {
             today: shiftedDate({}),
@@ -41,12 +57,11 @@ function readState() {
             "3m": shiftedDate({ months: 3 }),
             "12m": shiftedDate({ months: 12 }),
         };
-        period.value = Object.entries(values).find(([, value]) => value === after)?.[0] ?? "any";
-    } else {
-        period.value = "any";
+        period.value = Object.entries(values).find(([, value]) => value === after)?.[0] ?? null;
+        return;
     }
 
-    tapSort.value = state.sort === "-last_tapped_on" ? "recent" : state.sort === "last_tapped_on" ? "oldest" : "default";
+    period.value = null;
 }
 
 function updatePeriod() {
@@ -85,75 +100,22 @@ function updatePeriod() {
     router.push({ query: state });
 }
 
-function updateSort() {
-    const state = qs.parse(window.location.search.replace(/^\?/, "")) as any;
-    if (tapSort.value === "recent") {
-        state.sort = "-last_tapped_on";
-    } else if (tapSort.value === "oldest") {
-        state.sort = "last_tapped_on";
-    } else if (state.sort === "last_tapped_on" || state.sort === "-last_tapped_on") {
-        state.sort = "name";
-    }
-    state.page = 1;
-    router.push({ query: state });
-}
-
 watch(() => route.fullPath, readState, { immediate: true });
 </script>
 
 <template>
-    <div class="cocktail-tap-list-filters">
-        <h4>Drinking history</h4>
-        <label>
-            <span>Last tapped</span>
-            <select v-model="period" class="form-select" @change="updatePeriod">
-                <option value="any">Any time</option>
-                <option value="today">Today</option>
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="3m">Last 3 months</option>
-                <option value="12m">Last 12 months</option>
-                <option value="older12m">More than 12 months ago</option>
-                <option value="never">Never</option>
-            </select>
-        </label>
-        <label>
-            <span>Sort by drinking history</span>
-            <select v-model="tapSort" class="form-select" @change="updateSort">
-                <option value="default">Default</option>
-                <option value="recent">Recently tapped</option>
-                <option value="oldest">Least recently tapped</option>
-            </select>
-        </label>
-    </div>
+    <Teleport defer to=".resource-search__refinements__body">
+        <Refinement
+            id="last-tapped"
+            v-model="period"
+            title="Last tapped"
+            :refinements="refinements"
+            type="radio"
+            @change="updatePeriod"
+        ></Refinement>
+    </Teleport>
+
+    <Teleport defer to=".resource-search__content__filter > select.form-select:first-of-type">
+        <option value="last_tapped_on">Last tapped</option>
+    </Teleport>
 </template>
-
-<style scoped>
-.cocktail-tap-list-filters {
-    display: grid;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--clr-gray-300);
-}
-
-.cocktail-tap-list-filters h4 {
-    margin: 0;
-    font-size: 0.95rem;
-}
-
-.cocktail-tap-list-filters label {
-    display: grid;
-    gap: 0.25rem;
-    min-width: 0;
-}
-
-.cocktail-tap-list-filters label > span {
-    font-size: 0.75rem;
-    opacity: 0.7;
-}
-
-.cocktail-tap-list-filters select {
-    width: 100%;
-}
-</style>
