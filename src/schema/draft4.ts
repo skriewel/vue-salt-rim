@@ -23,6 +23,18 @@ export interface CocktailRecipeDraft04 {
      */
     description?: string | null;
     /**
+     * Cocktail author / creator
+     */
+    author?: string | null;
+    /**
+     * Cocktail creation or publication year
+     */
+    year?: string | number | null;
+    /**
+     * Name of the parent cocktail when this recipe is a variation or riff
+     */
+    parent?: string | null;
+    /**
      * Cocktail garnish
      */
     garnish?: string | null;
