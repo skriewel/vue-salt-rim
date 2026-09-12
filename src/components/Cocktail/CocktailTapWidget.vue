@@ -1,9 +1,18 @@
 <template>
     <div class="cocktail-tap-widget">
-        <div class="cocktail-tap-widget__summary">
-            <button type="button" class="button button--outline" :disabled="isSaving" @click="tapToday">
-                {{ isSaving ? "Tapping…" : "Tap" }}
+        <Teleport to=".cocktail-details__actions">
+            <button
+                type="button"
+                class="button button--outline button--has-icon"
+                :disabled="isSaving"
+                :title="isSaving ? 'Tapping…' : 'Tap cocktail'"
+                :aria-label="isSaving ? 'Tapping cocktail' : 'Tap cocktail'"
+                @click="tapToday"
+            >
+                <IconCocktail />
             </button>
+        </Teleport>
+        <div class="cocktail-tap-widget__summary">
             <span class="cocktail-tap-widget__count">{{ taps.meta.total }}×</span>
             <SaltRimDialog v-model="showHistory" @dialog-opened="fetchTaps">
                 <template #trigger="{ toggleDialog }">
@@ -56,6 +65,7 @@ import { onMounted, ref } from "vue";
 import SaltRimDialog from "@/components/Dialog/SaltRimDialog.vue";
 import CocktailTapClient, { type CocktailTap, type CocktailTapList } from "@/api/CocktailTapClient";
 import { useSaltRimToast } from "@/composables/toast";
+import IconCocktail from "@/components/Icons/IconCocktail.vue";
 
 const props = defineProps<{ cocktailId: number }>();
 const toast = useSaltRimToast();
