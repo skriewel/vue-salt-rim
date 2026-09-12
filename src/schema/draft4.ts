@@ -35,6 +35,10 @@ export interface CocktailRecipeDraft04 {
      */
     parent?: string | null;
     /**
+     * Existing Bar Assistant cocktail ID for the parent cocktail
+     */
+    parent_id?: number | null;
+    /**
      * Cocktail garnish
      */
     garnish?: string | null;
