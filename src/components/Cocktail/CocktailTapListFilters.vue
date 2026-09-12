@@ -34,9 +34,8 @@ function readState() {
         period.value = "older12m";
     } else if (filter.tapped_after) {
         const after = String(filter.tapped_after);
-        const today = shiftedDate({});
         const values: Record<string, string> = {
-            today,
+            today: shiftedDate({}),
             "7d": shiftedDate({ days: 6 }),
             "30d": shiftedDate({ days: 29 }),
             "3m": shiftedDate({ months: 3 }),
@@ -104,6 +103,7 @@ watch(() => route.fullPath, readState, { immediate: true });
 
 <template>
     <div class="cocktail-tap-list-filters">
+        <h4>Drinking history</h4>
         <label>
             <span>Last tapped</span>
             <select v-model="period" class="form-select" @change="updatePeriod">
@@ -118,7 +118,7 @@ watch(() => route.fullPath, readState, { immediate: true });
             </select>
         </label>
         <label>
-            <span>Tap sort</span>
+            <span>Sort by drinking history</span>
             <select v-model="tapSort" class="form-select" @change="updateSort">
                 <option value="default">Default</option>
                 <option value="recent">Recently tapped</option>
@@ -130,16 +130,22 @@ watch(() => route.fullPath, readState, { immediate: true });
 
 <style scoped>
 .cocktail-tap-list-filters {
-    display: flex;
+    display: grid;
     gap: 0.75rem;
-    align-items: end;
-    margin: 0 0 1rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--clr-gray-300);
+}
+
+.cocktail-tap-list-filters h4 {
+    margin: 0;
+    font-size: 0.95rem;
 }
 
 .cocktail-tap-list-filters label {
     display: grid;
     gap: 0.25rem;
-    min-width: 12rem;
+    min-width: 0;
 }
 
 .cocktail-tap-list-filters label > span {
@@ -147,10 +153,7 @@ watch(() => route.fullPath, readState, { immediate: true });
     opacity: 0.7;
 }
 
-@media (max-width: 650px) {
-    .cocktail-tap-list-filters {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
+.cocktail-tap-list-filters select {
+    width: 100%;
 }
 </style>
