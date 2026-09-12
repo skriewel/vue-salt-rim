@@ -186,7 +186,7 @@ function installSortOption() {
     sortSelect.append(sortOption);
 }
 
-function installExtraExistingFilterOptions() {
+function installExtraExistingFilterOptions(): boolean {
     if (!document.getElementById("custom-total-ingredients-max3")) {
         const anchor = document.querySelector<HTMLInputElement>('input[id^="total-ingredients-"]');
         const body = anchor?.closest(".resource-search__refinements__refinement__body");
@@ -196,6 +196,7 @@ function installExtraExistingFilterOptions() {
 
             const input = document.createElement("input");
             input.type = "radio";
+            input.name = anchor.name;
             input.id = "custom-total-ingredients-max3";
             input.value = "max3";
             input.addEventListener("change", () => {
@@ -220,6 +221,7 @@ function installExtraExistingFilterOptions() {
 
             const input = document.createElement("input");
             input.type = "radio";
+            input.name = anchor.name;
             input.id = "custom-user-rating-none";
             input.value = "none";
             input.addEventListener("change", () => {
@@ -236,6 +238,8 @@ function installExtraExistingFilterOptions() {
     }
 
     syncControls();
+
+    return Boolean(document.getElementById("custom-total-ingredients-max3") && document.getElementById("custom-user-rating-none"));
 }
 
 function installFilterGroup(): boolean {
@@ -332,17 +336,23 @@ function installFilterGroup(): boolean {
 async function installControls() {
     installCocktailClientFilterBridge();
     await nextTick();
-    installSortOption();
-    installExtraExistingFilterOptions();
 
-    if (installFilterGroup()) return;
+    installSortOption();
+    let extraOptionsInstalled = installExtraExistingFilterOptions();
+    let tapGroupInstalled = installFilterGroup();
+
+    if (extraOptionsInstalled && tapGroupInstalled) return;
 
     let attempts = 0;
     const timer = window.setInterval(() => {
         attempts++;
         installSortOption();
-        installExtraExistingFilterOptions();
-        if (installFilterGroup() || attempts >= 20) window.clearInterval(timer);
+        extraOptionsInstalled = installExtraExistingFilterOptions();
+        tapGroupInstalled = installFilterGroup();
+
+        if ((extraOptionsInstalled && tapGroupInstalled) || attempts >= 30) {
+            window.clearInterval(timer);
+        }
     }, 100);
 }
 
