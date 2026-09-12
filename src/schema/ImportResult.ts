@@ -8,9 +8,9 @@ export interface ImportResult {
     instructions: string;
     garnish: string | null;
     source: string;
-    author: string | null;
-    year: string | null;
-    parentName: string | null;
+    author?: string | null;
+    year?: string | null;
+    parentName?: string | null;
     tags: string[];
     glassName: string | null;
     methodName: string | null;
