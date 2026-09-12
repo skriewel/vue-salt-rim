@@ -27,8 +27,8 @@ onMounted(loadStats);
 </script>
 
 <template>
-    <div class="shelf-grid tap-stats">
-        <div class="shelf-grid__col">
+    <div class="tap-stats">
+        <div class="tap-stats__scope">
             <OverlayLoader v-if="loading"></OverlayLoader>
             <h3 class="page-subtitle">Your cocktail history</h3>
 
@@ -67,7 +67,7 @@ onMounted(loadStats);
             </template>
         </div>
 
-        <div class="shelf-grid__col">
+        <div class="tap-stats__scope">
             <OverlayLoader v-if="loading"></OverlayLoader>
             <h3 class="page-subtitle">Bar cocktail history</h3>
 
@@ -109,6 +109,18 @@ onMounted(loadStats);
 </template>
 
 <style scoped>
+.tap-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+    align-items: start;
+}
+
+.tap-stats__scope {
+    position: relative;
+    min-width: 0;
+}
+
 .tap-stats__subtitle {
     margin: 0 0 0.65rem;
     font-size: 0.95rem;
@@ -120,5 +132,11 @@ onMounted(loadStats);
 
 .tap-stats__empty {
     opacity: 0.65;
+}
+
+@media (max-width: 800px) {
+    .tap-stats {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
