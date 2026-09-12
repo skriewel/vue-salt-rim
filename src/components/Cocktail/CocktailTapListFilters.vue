@@ -128,6 +128,14 @@ function updatePeriod(period: string) {
     router.push({ query: state });
 }
 
+function updateExistingFilter(key: string, value: string) {
+    const state = qs.parse(window.location.search.replace(/^\?/, "")) as any;
+    state.filter = state.filter ?? {};
+    state.filter[key] = value;
+    state.page = 1;
+    router.push({ query: state });
+}
+
 function chevronSvg(collapsed: boolean): string {
     return collapsed
         ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path d="M10.8284 12.0007L15.7782 16.9504L14.364 18.3646L8 12.0007L14.364 5.63672L15.7782 7.05093L10.8284 12.0007Z"></path></svg>'
@@ -146,10 +154,18 @@ function renderCollapsedState() {
 function syncControls() {
     const currentPeriod = getCurrentPeriod();
     const hasActiveFilter = currentPeriod !== "any";
+    const state = qs.parse(window.location.search.replace(/^\?/, "")) as any;
+    const filter = state.filter ?? {};
 
     filterRoot?.querySelectorAll<HTMLInputElement>('input[name="tap-last-tapped"]').forEach((input) => {
         input.checked = input.value === currentPeriod;
     });
+
+    const maxThree = document.getElementById("custom-total-ingredients-max3") as HTMLInputElement | null;
+    if (maxThree) maxThree.checked = String(filter.total_ingredients ?? "") === "max3";
+
+    const noRating = document.getElementById("custom-user-rating-none") as HTMLInputElement | null;
+    if (noRating) noRating.checked = String(filter.user_rating_min ?? "") === "none";
 
     if (clearButton) clearButton.style.display = hasActiveFilter ? "" : "none";
 
@@ -168,6 +184,58 @@ function installSortOption() {
     sortOption.value = "last_tapped_on";
     sortOption.textContent = "Last tapped";
     sortSelect.append(sortOption);
+}
+
+function installExtraExistingFilterOptions() {
+    if (!document.getElementById("custom-total-ingredients-max3")) {
+        const anchor = document.querySelector<HTMLInputElement>('input[id^="total-ingredients-"]');
+        const body = anchor?.closest(".resource-search__refinements__refinement__body");
+        if (body) {
+            const row = document.createElement("div");
+            row.className = "resource-search__refinements__refinement__item";
+
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.id = "custom-total-ingredients-max3";
+            input.value = "max3";
+            input.addEventListener("change", () => {
+                if (input.checked) updateExistingFilter("total_ingredients", "max3");
+            });
+
+            const label = document.createElement("label");
+            label.htmlFor = input.id;
+            label.textContent = "≤ 3 ingredients";
+
+            row.append(input, label);
+            body.prepend(row);
+        }
+    }
+
+    if (!document.getElementById("custom-user-rating-none")) {
+        const anchor = document.querySelector<HTMLInputElement>('input[id^="user-rating-"]');
+        const body = anchor?.closest(".resource-search__refinements__refinement__body");
+        if (body) {
+            const row = document.createElement("div");
+            row.className = "resource-search__refinements__refinement__item";
+
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.id = "custom-user-rating-none";
+            input.value = "none";
+            input.addEventListener("change", () => {
+                if (input.checked) updateExistingFilter("user_rating_min", "none");
+            });
+
+            const label = document.createElement("label");
+            label.htmlFor = input.id;
+            label.textContent = "No rating";
+
+            row.append(input, label);
+            body.prepend(row);
+        }
+    }
+
+    syncControls();
 }
 
 function installFilterGroup(): boolean {
@@ -265,6 +333,7 @@ async function installControls() {
     installCocktailClientFilterBridge();
     await nextTick();
     installSortOption();
+    installExtraExistingFilterOptions();
 
     if (installFilterGroup()) return;
 
@@ -272,6 +341,7 @@ async function installControls() {
     const timer = window.setInterval(() => {
         attempts++;
         installSortOption();
+        installExtraExistingFilterOptions();
         if (installFilterGroup() || attempts >= 20) window.clearInterval(timer);
     }, 100);
 }
@@ -285,6 +355,8 @@ watch(() => route.fullPath, () => {
 onBeforeUnmount(() => {
     filterRoot?.remove();
     sortOption?.remove();
+    document.getElementById("custom-total-ingredients-max3")?.closest(".resource-search__refinements__refinement__item")?.remove();
+    document.getElementById("custom-user-rating-none")?.closest(".resource-search__refinements__refinement__item")?.remove();
     uninstallCocktailClientFilterBridge();
 });
 </script>
