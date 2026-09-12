@@ -80,9 +80,10 @@ const tapButton = ref<HTMLButtonElement | null>(null);
 
 onMounted(async () => {
     await nextTick();
-    const actions = document.querySelector(".cocktail-details__actions");
+    const actions = document.querySelector<HTMLElement>(".cocktail-details__actions");
     if (actions && tapButton.value) {
-        actions.appendChild(tapButton.value);
+        actions.style.gridTemplateColumns = "repeat(4, 1fr)";
+        actions.insertBefore(tapButton.value, actions.lastElementChild);
     }
     await fetchTaps();
 });
