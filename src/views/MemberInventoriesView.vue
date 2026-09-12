@@ -3,11 +3,7 @@ import { computed, ref } from "vue";
 import type { components } from "@/api/api";
 import AppState from "@/AppState";
 import BarAssistantClient from "@/api/BarAssistantClient";
-import MemberInventoryClient, {
-    type MemberInventory,
-    type MemberInventoryCocktail,
-    type MemberInventoryIngredient,
-} from "@/api/MemberInventoryClient";
+import MemberInventoryClient, { type MemberInventory, type MemberInventoryIngredient } from "@/api/MemberInventoryClient";
 import EmptyState from "@/components/EmptyState.vue";
 import OverlayLoader from "@/components/OverlayLoader.vue";
 import PageHeader from "@/components/PageHeader.vue";
@@ -21,13 +17,12 @@ const toast = useSaltRimToast();
 const inventories = ref<MemberInventory[]>([]);
 const selectedInventoryId = ref<number | null>(null);
 const ingredients = ref<MemberInventoryIngredient[]>([]);
-const cocktails = ref<MemberInventoryCocktail[]>([]);
 const ingredientSearch = ref("");
 const ingredientSearchResults = ref<Ingredient[]>([]);
 const isLoading = ref(false);
 const isSearching = ref(false);
 
-useTitle("My Shelf");
+useTitle("Inventory");
 
 const selectedInventory = computed(() => inventories.value.find((inventory) => inventory.id === selectedInventoryId.value) ?? null);
 const currentIngredientIds = computed(() => new Set(ingredients.value.map((ingredient) => ingredient.id)));
@@ -52,7 +47,6 @@ async function loadInventories() {
 async function loadSelectedInventory() {
     if (selectedInventoryId.value === null) {
         ingredients.value = [];
-        cocktails.value = [];
         return;
     }
 
@@ -60,12 +54,8 @@ async function loadSelectedInventory() {
     ingredientSearch.value = "";
     ingredientSearchResults.value = [];
     try {
-        const [ingredientResponse, cocktailResponse] = await Promise.all([
-            MemberInventoryClient.getIngredients(appState.user.id, selectedInventoryId.value),
-            MemberInventoryClient.getCocktails(appState.user.id, selectedInventoryId.value),
-        ]);
+        const ingredientResponse = await MemberInventoryClient.getIngredients(appState.user.id, selectedInventoryId.value);
         ingredients.value = ingredientResponse.data ?? [];
-        cocktails.value = cocktailResponse.data ?? [];
     } catch (e: any) {
         toast.error(e.message ?? "Unable to load inventory.");
     } finally {
@@ -129,7 +119,12 @@ loadInventories();
 </script>
 
 <template>
-    <PageHeader>My Shelf</PageHeader>
+    <PageHeader>
+        Inventory
+        <template #actions>
+            <RouterLink class="button button--outline" :to="{ name: 'cocktails', query: { inventory: '1' } }">Cocktails I can make</RouterLink>
+        </template>
+    </PageHeader>
 
     <div class="member-inventory-page">
         <OverlayLoader v-if="isLoading" />
@@ -148,59 +143,39 @@ loadInventories();
                 </select>
             </div>
 
-            <div class="inventory-grid">
-                <section>
-                    <h3 class="page-subtitle">{{ selectedInventory?.name ?? "Inventory" }} ingredients</h3>
+            <section>
+                <h3 class="page-subtitle">{{ selectedInventory?.name ?? "Inventory" }} ingredients</h3>
 
-                    <div class="block-container block-container--padded ingredient-search">
-                        <div class="ingredient-search__controls">
-                            <input
-                                v-model="ingredientSearch"
-                                class="form-input"
-                                type="search"
-                                placeholder="Search ingredients to add"
-                                @keyup.enter="searchIngredients"
-                            />
-                            <button type="button" class="button button--dark" :disabled="isSearching" @click="searchIngredients">
-                                Search
-                            </button>
-                        </div>
-
-                        <div v-if="availableSearchResults.length > 0" class="inventory-list ingredient-search__results">
-                            <div v-for="ingredient in availableSearchResults" :key="ingredient.id" class="inventory-list__item">
-                                <RouterLink :to="{ name: 'ingredients.show', params: { id: ingredient.slug } }">{{ ingredient.name }}</RouterLink>
-                                <button type="button" class="button button--outline" @click="addIngredient(ingredient)">Add</button>
-                            </div>
-                        </div>
+                <div class="block-container block-container--padded ingredient-search">
+                    <div class="ingredient-search__controls">
+                        <input
+                            v-model="ingredientSearch"
+                            class="form-input"
+                            type="search"
+                            placeholder="Search ingredients to add"
+                            @keyup.enter="searchIngredients"
+                        />
+                        <button type="button" class="button button--dark" :disabled="isSearching" @click="searchIngredients">
+                            Search
+                        </button>
                     </div>
 
-                    <div v-if="ingredients.length > 0" class="inventory-list">
-                        <div v-for="ingredient in ingredients" :key="ingredient.id" class="block-container inventory-list__item">
+                    <div v-if="availableSearchResults.length > 0" class="inventory-list ingredient-search__results">
+                        <div v-for="ingredient in availableSearchResults" :key="ingredient.id" class="inventory-list__item">
                             <RouterLink :to="{ name: 'ingredients.show', params: { id: ingredient.slug } }">{{ ingredient.name }}</RouterLink>
-                            <button type="button" class="button button--outline" @click="removeIngredient(ingredient)">Remove</button>
+                            <button type="button" class="button button--outline" @click="addIngredient(ingredient)">Add</button>
                         </div>
                     </div>
-                    <EmptyState v-else-if="!isLoading">No ingredients in this inventory.</EmptyState>
-                </section>
+                </div>
 
-                <section>
-                    <h3 class="page-subtitle">Cocktails I can make</h3>
-                    <div v-if="cocktails.length > 0" class="inventory-list">
-                        <RouterLink
-                            v-for="cocktail in cocktails"
-                            :key="cocktail.id"
-                            class="block-container inventory-list__item inventory-list__item--cocktail"
-                            :to="{ name: 'cocktails.show', params: { id: cocktail.slug } }"
-                        >
-                            <span>
-                                <strong>{{ cocktail.name }}</strong>
-                                <small v-if="cocktail.short_ingredients?.length">{{ cocktail.short_ingredients.join(", ") }}</small>
-                            </span>
-                        </RouterLink>
+                <div v-if="ingredients.length > 0" class="inventory-list">
+                    <div v-for="ingredient in ingredients" :key="ingredient.id" class="block-container inventory-list__item">
+                        <RouterLink :to="{ name: 'ingredients.show', params: { id: ingredient.slug } }">{{ ingredient.name }}</RouterLink>
+                        <button type="button" class="button button--outline" @click="removeIngredient(ingredient)">Remove</button>
                     </div>
-                    <EmptyState v-else-if="!isLoading">No cocktails can currently be made from this inventory.</EmptyState>
-                </section>
-            </div>
+                </div>
+                <EmptyState v-else-if="!isLoading">No ingredients in this inventory.</EmptyState>
+            </section>
         </template>
     </div>
 </template>
@@ -219,12 +194,6 @@ loadInventories();
 
 .inventory-selector label {
     font-weight: var(--fw-bold);
-}
-
-.inventory-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--gap-size-4);
 }
 
 .ingredient-search {
@@ -257,24 +226,7 @@ loadInventories();
     padding: 0.75rem 1rem;
 }
 
-.inventory-list__item--cocktail {
-    text-decoration: none;
-}
-
-.inventory-list__item--cocktail span {
-    display: grid;
-    gap: 0.2rem;
-}
-
-.inventory-list__item--cocktail small {
-    color: var(--clr-gray-600);
-}
-
 @media (max-width: 800px) {
-    .inventory-grid {
-        grid-template-columns: 1fr;
-    }
-
     .ingredient-search__controls {
         align-items: stretch;
         flex-direction: column;
