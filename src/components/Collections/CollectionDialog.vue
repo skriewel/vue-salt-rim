@@ -3,7 +3,7 @@
         <OverlayLoader v-if="isLoading" />
         <div class="dialog-title">{{ title }}</div>
         <div class="dialog-content">
-            <SubscriptionCheck v-if="collections.length >= 3">Subscribe to "Mixologist" plan to create unlimited collections!</SubscriptionCheck>
+            <SubscriptionCheck v-if="ownedCollectionCount >= 3">Subscribe to "Mixologist" plan to create unlimited collections!</SubscriptionCheck>
             <form action="">
                 <div class="form-group">
                     <label class="form-label" for="dialog-collection-id">{{ $t("collections.collection") }}:</label>
@@ -27,6 +27,12 @@
                             <span>{{ $t("collections.share-in-bar") }}</span>
                         </label>
                     </div>
+                    <div class="form-group">
+                        <label class="form-checkbox" for="collaborative-in-bar">
+                            <input id="collaborative-in-bar" v-model="newCollection.is_collaborative" type="checkbox" :value="true" :disabled="!newCollection.is_bar_shared" />
+                            <span>Allow bar members to edit this collection</span>
+                        </label>
+                    </div>
                 </template>
             </form>
         </div>
@@ -43,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import type { components } from "@/api/api";
@@ -53,8 +59,13 @@ import { useSaltRimToast } from "@/composables/toast";
 import OverlayLoader from "./../OverlayLoader.vue";
 import SubscriptionCheck from "../SubscriptionCheck.vue";
 
-type Collection = components["schemas"]["Collection"];
-type CollectionRequest = components["schemas"]["CollectionRequest"];
+type Collection = components["schemas"]["Collection"] & {
+    is_collaborative?: boolean;
+    is_owned_by_user?: boolean;
+};
+type CollectionRequest = components["schemas"]["CollectionRequest"] & {
+    is_collaborative?: boolean;
+};
 
 const props = withDefaults(
     defineProps<{
@@ -80,11 +91,22 @@ const newCollection = ref<CollectionRequest>({
     name: "",
     description: null,
     is_bar_shared: false,
+    is_collaborative: false,
 });
 const collectionId = ref<number | null>(null);
 const collectionName = ref<HTMLInputElement | null>(null);
 
 const isManagingSingleCocktail = computed(() => props.cocktails.length === 1);
+const ownedCollectionCount = computed(() => collections.value.filter((collection) => collection.is_owned_by_user !== false).length);
+
+watch(
+    () => newCollection.value.is_bar_shared,
+    (isShared) => {
+        if (!isShared) {
+            newCollection.value.is_collaborative = false;
+        }
+    },
+);
 
 const cocktailCollections = computed(() => {
     if (isManagingSingleCocktail.value) {
@@ -111,7 +133,7 @@ async function fetchCollections() {
 
     try {
         const resp = await BarAssistantClient.getCollections({ include: "cocktails" });
-        collections.value = resp?.data ?? [];
+        collections.value = (resp?.data as Collection[]) ?? [];
     } finally {
         isLoading.value = false;
     }
@@ -178,6 +200,7 @@ async function saveAndClose() {
 
     isLoading.value = true;
     newCollection.value.cocktails = props.cocktails;
+    newCollection.value.is_collaborative = Boolean(newCollection.value.is_bar_shared && newCollection.value.is_collaborative);
 
     try {
         const resp = await BarAssistantClient.saveCollection(newCollection.value);

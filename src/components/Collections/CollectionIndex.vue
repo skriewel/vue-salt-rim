@@ -5,7 +5,7 @@
             <SaltRimDialog v-model="showDialog">
                 <template #trigger>
                     <button
-                        v-if="(!appState.isSubscribed() && collections.length >= 3) == false"
+                        v-if="(!appState.isSubscribed() && ownedCollectionCount >= 3) == false"
                         type="button"
                         class="button button--dark"
                         @click.prevent="openDialog($t('collections.add'), {} as Collection)"
@@ -23,13 +23,19 @@
     <div>
         <OverlayLoader v-if="isLoading" />
         <div v-if="collections.length > 0">
-            <SubscriptionCheck v-if="collections.length >= 3">Subscribe to "Mixologist" plan to create unlimited collections!</SubscriptionCheck>
+            <SubscriptionCheck v-if="ownedCollectionCount >= 3">Subscribe to "Mixologist" plan to create unlimited collections!</SubscriptionCheck>
             <div class="collections">
                 <div v-for="collection in collections" :key="collection.id" class="block-container block-container--padded block-container--hover collections__collection">
-                    <RouterLink class="collections__collection__title" :to="{ name: 'cocktails', query: { 'filter[collection_id]': collection.id } }">{{
-                        collection.name
-                    }}</RouterLink>
-                    <br />
+                    <div class="collections__collection__heading">
+                        <RouterLink class="collections__collection__title" :to="{ name: 'cocktails', query: { 'filter[collection_id]': collection.id } }">
+                            {{ collection.name }}
+                        </RouterLink>
+                        <span v-if="collection.is_owned_by_user === false" class="collections__shared-icon" :title="$t('collection-shared')" :aria-label="$t('collection-shared')">
+                            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3Zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z" />
+                            </svg>
+                        </span>
+                    </div>
                     <div class="collections__collection__content">
                         <small>
                             {{ collection.cocktails.length }} {{ $t("cocktail.cocktails") }}
@@ -38,14 +44,16 @@
                         <br />
                         {{ $t("description") }}: {{ collection.description ? collection.description : "n/a" }}
                     </div>
-                    <div class="collections__collection__action">
+                    <div v-if="collection.cocktails.length > 0 || collection.is_owned_by_user !== false" class="collections__collection__action">
                         <template v-if="collection.cocktails.length > 0">
                             <RouterLink :to="{ name: 'collections.quantity-calculator', params: { id: collection.id } }">{{ $t("collections.quantitiy-calculator") }}</RouterLink>
-                            &middot;
+                            <template v-if="collection.is_owned_by_user !== false"> &middot; </template>
                         </template>
-                        <a class="list-group__action" href="#" @click.prevent="openDialog($t('collections.edit'), collection)">{{ $t("edit") }}</a>
-                        &middot;
-                        <a class="list-group__action" href="#" @click.prevent="deleteCollection(collection)">{{ $t("remove") }}</a>
+                        <template v-if="collection.is_owned_by_user !== false">
+                            <a class="list-group__action" href="#" @click.prevent="openDialog($t('collections.edit'), collection)">{{ $t("edit") }}</a>
+                            &middot;
+                            <a class="list-group__action" href="#" @click.prevent="deleteCollection(collection)">{{ $t("remove") }}</a>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -66,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import BarAssistantClient from "@/api/BarAssistantClient";
 import OverlayLoader from "@/components/OverlayLoader.vue";
@@ -81,7 +89,11 @@ import { useSaltRimToast } from "@/composables/toast";
 import { useConfirm } from "@/composables/confirm";
 import type { components } from "@/api/api";
 
-type Collection = Omit<components["schemas"]["Collection"], "cocktails"> & { cocktails: components["schemas"]["CocktailBasic"][] };
+type Collection = Omit<components["schemas"]["Collection"], "cocktails"> & {
+    cocktails: components["schemas"]["CocktailBasic"][];
+    is_collaborative?: boolean;
+    is_owned_by_user?: boolean;
+};
 
 const appState = new AppState();
 const { t } = useI18n();
@@ -93,6 +105,7 @@ const showDialog = ref(false);
 const dialogTitle = ref("Collection data");
 const editCollection = ref<Collection | null>(null);
 const collections = ref<Collection[]>([]);
+const ownedCollectionCount = computed(() => collections.value.filter((collection) => collection.is_owned_by_user !== false).length);
 
 useTitle(t("collections.title"));
 
@@ -150,9 +163,24 @@ function deleteCollection(collection: Collection) {
     }
 }
 
+.collections__collection__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 .collections__collection__title {
     font-size: 1.25rem;
     font-weight: var(--fw-bold);
+}
+
+.collections__shared-icon {
+    display: inline-flex;
+    color: var(--clr-gray-500);
+}
+
+.collections__shared-icon svg {
+    fill: currentColor;
 }
 
 .collections__collection__action {
