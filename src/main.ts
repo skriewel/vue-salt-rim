@@ -29,7 +29,23 @@ import fi_FI from "./locales/fi-FI";
 
 const JSON_IMPORT_METADATA_KEY = "jsonImportMetadata";
 
-router.beforeEach((to) => {
+router.beforeEach((to, from) => {
+    // CocktailForm redirects to the cocktail slug after an update. If the name was
+    // changed, that slug is stale because the backend may have generated a new one.
+    // The edit route already carries the stable numeric cocktail id, so prefer it
+    // whenever we return from an existing cocktail edit to the detail page.
+    if (from.name === "cocktails.form" && to.name === "cocktails.show" && from.query.id) {
+        const editId = Array.isArray(from.query.id) ? from.query.id[0] : from.query.id;
+        if (editId && String(to.params.id) !== String(editId)) {
+            return {
+                name: "cocktails.show",
+                params: { ...to.params, id: editId },
+                query: to.query,
+                hash: to.hash,
+            };
+        }
+    }
+
     if (to.name !== "cocktails.form") {
         return true;
     }
