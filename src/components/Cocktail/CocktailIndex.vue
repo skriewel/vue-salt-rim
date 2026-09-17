@@ -74,6 +74,16 @@
                         :refinements="refineAuthors"
                         @change="updateRouterPath"
                     ></Refinement>
+                    <Refinement id="publication" title="Source/Publication">
+                        <input
+                            v-model="activeFilters.publication"
+                            class="form-input"
+                            type="text"
+                            placeholder="Search source or publication..."
+                            @change="updateRouterPath"
+                            @keyup.enter="updateRouterPath"
+                        />
+                    </Refinement>
                     <Refinement
                         id="favorited-by-user"
                         v-model="activeFilters.favorited_by_user"
@@ -342,6 +352,7 @@ interface ActiveFilters {
     user_shelves: string[];
     created_user_id: string[];
     author: string[];
+    publication: string | null;
     favorited_by_user: string[];
     ignore_ingredients: string[];
     specific_ingredients: string[];
@@ -428,6 +439,7 @@ const activeFilters = ref<ActiveFilters>({
     user_shelves: [],
     created_user_id: [],
     author: [],
+    publication: null,
     favorited_by_user: [],
     ignore_ingredients: [],
     specific_ingredients: [],
@@ -721,6 +733,7 @@ function queryToState() {
     activeFilters.value.user_shelves = state.filter && state.filter.user_shelves ? String(state.filter.user_shelves).split(",") : [];
     activeFilters.value.created_user_id = state.filter && state.filter.created_user_id ? String(state.filter.created_user_id).split(",") : [];
     activeFilters.value.author = state.filter && state.filter.author ? String(state.filter.author).split(",") : [];
+    activeFilters.value.publication = state.filter && state.filter.publication ? String(state.filter.publication) : null;
     activeFilters.value.favorited_by_user = state.filter && state.filter.favorited_by_user ? String(state.filter.favorited_by_user).split(",") : [];
     activeFilters.value.on_shelf = String(state.inventory ?? "") === "1";
     activeFilters.value.bar_shelf = state.filter && state.filter.bar_shelf ? state.filter.bar_shelf : null;
@@ -795,6 +808,7 @@ function stateToQuery() {
         id: activeFilters.value.id.length > 0 ? activeFilters.value.id.join(",") : null,
         created_user_id: activeFilters.value.created_user_id.length > 0 ? activeFilters.value.created_user_id.join(",") : null,
         author: activeFilters.value.author.length > 0 ? activeFilters.value.author.join(",") : null,
+        publication: activeFilters.value.publication && activeFilters.value.publication.trim() !== "" ? activeFilters.value.publication.trim() : null,
         favorited_by_user: activeFilters.value.favorited_by_user.length > 0 ? activeFilters.value.favorited_by_user.join(",") : null,
         abv_min: activeFilters.value.abv ? activeFilters.value.abv.min : null,
         abv_max: activeFilters.value.abv ? activeFilters.value.abv.max : null,
@@ -863,6 +877,7 @@ function clearRefinements() {
         user_shelves: [],
         created_user_id: [],
         author: [],
+        publication: null,
         favorited_by_user: [],
         ignore_ingredients: [],
         specific_ingredients: [],
