@@ -28,8 +28,14 @@
                     /></RouterLink>
                 </dd>
             </template>
+            <template v-if="cocktail.publication">
+                <dt>Quelle (Publikation)</dt>
+                <dd>
+                    <RouterLink :to="{ name: 'cocktails', query: { 'filter[publication]': cocktail.publication } }">{{ cocktail.publication }}</RouterLink>
+                </dd>
+            </template>
             <template v-if="cocktail.source">
-                <dt>{{ t("source") }}</dt>
+                <dt>Weblink</dt>
                 <dd>
                     <a class="external-link" v-if="isValidUrl(cocktail.source)" :href="cocktail.source" target="_blank">{{ t("website") }} <IconExternal /></a>
                     <span v-else>{{ cocktail.source }}</span>
@@ -85,7 +91,7 @@ import IconExternal from "@/components/Icons/IconExternal.vue";
 import CocktailTapWidget from "@/components/Cocktail/CocktailTapWidget.vue";
 import AppState from "@/AppState";
 
-type Cocktail = components["schemas"]["Cocktail"];
+type Cocktail = components["schemas"]["Cocktail"] & { publication?: string | null };
 type RatingBreakdownEntry = {
     name: string;
     rating: number;
