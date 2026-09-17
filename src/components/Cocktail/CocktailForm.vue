@@ -147,10 +147,14 @@
                     ></SaltRimRadio>
                 </div>
             </div>
+            <div class="form-group">
+                <label class="form-label" for="publication">Quelle (Publikation):</label>
+                <input id="publication" v-model="cocktail.publication" class="form-input" type="text" placeholder="Buch, Magazin oder andere Publikation..." />
+            </div>
             <div class="sr-grid sr-grid--3-col">
                 <div class="form-group">
-                    <label class="form-label" for="source">{{ t("source") }}:</label>
-                    <input id="source" v-model="cocktail.source" class="form-input" type="text" :placeholder="t('placeholder.source')" />
+                    <label class="form-label" for="source">Weblink:</label>
+                    <input id="source" v-model="cocktail.source" class="form-input" type="url" placeholder="https://..." />
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="author">{{ t("author.title") }}:</label>
@@ -239,8 +243,8 @@ import CocktailFinderBasic from "../CocktailFinderBasic.vue";
 import { useBasicSearch } from "@/composables/useBasicSearch";
 import type { SearchResults } from "@/api/SearchResults";
 
-type Cocktail = components["schemas"]["Cocktail"];
-type CocktailRequest = components["schemas"]["CocktailRequest"];
+type Cocktail = components["schemas"]["Cocktail"] & { publication?: string | null };
+type CocktailRequest = components["schemas"]["CocktailRequest"] & { publication?: string | null };
 type CocktailIngredient = components["schemas"]["CocktailIngredient"];
 type Glass = components["schemas"]["Glass"];
 type CocktailMethod = components["schemas"]["CocktailMethod"];
@@ -272,6 +276,7 @@ const cocktail = ref<Partial<Cocktail>>({
     utensils: [],
     tags: [],
     parent_cocktail: null,
+    publication: "",
     glass: {} as Glass,
     method: {} as CocktailMethod,
 });
@@ -332,7 +337,6 @@ function handleCocktailIngredientModalClose(idx: number) {
     }
 
     showDialogs.value[idx] = false;
-    // Remove empty ingredients (ie: <not selected>)
     const emptyIngredient = cocktail.value.ingredients.findIndex((i) => i.ingredient.id == null || i.ingredient.id === 0);
     if (emptyIngredient != -1) {
         cocktail.value.ingredients.splice(emptyIngredient, 1);
@@ -499,6 +503,7 @@ async function submit() {
         instructions: cocktail.value.instructions,
         garnish: cocktail.value.garnish,
         source: cocktail.value.source,
+        publication: cocktail.value.publication,
         author: cocktail.value.author,
         cocktail_method_id: cocktail.value.method?.id,
         utensils: selectedUtensilIds.value,
@@ -612,6 +617,7 @@ function setupExistingCocktail(existingCocktail: Cocktail) {
     existingCocktail.description = existingCocktail.description ?? "";
     existingCocktail.instructions = existingCocktail.instructions ?? "";
     existingCocktail.garnish = existingCocktail.garnish ?? "";
+    existingCocktail.publication = existingCocktail.publication ?? "";
 
     if (!existingCocktail.method) {
         existingCocktail.method = {} as CocktailMethod;
@@ -624,12 +630,11 @@ function setupExistingCocktail(existingCocktail: Cocktail) {
     selectedUtensilIds.value = existingCocktail.utensils?.map((ut) => ut.id) ?? [];
     selectedTagNames.value = existingCocktail.tags?.map((t) => t.name) ?? [];
 
-    useTitle(`${t("cocktail.title")} \u22C5 ${cocktail.value.name}`);
+    useTitle(`${t("cocktail.title")} ⋅ ${cocktail.value.name}`);
 }
 
 init();
 
-// Watch for changes in the cocktail's instructions to auto-detect method
 watch(
     () => cocktail.value.instructions,
     (newVal) => {
