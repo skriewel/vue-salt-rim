@@ -29,7 +29,7 @@
                 </dd>
             </template>
             <template v-if="cocktail.publication">
-                <dt>Quelle (Publikation)</dt>
+                <dt>Source/Publication</dt>
                 <dd>
                     <RouterLink :to="{ name: 'cocktails', query: { 'filter[publication]': cocktail.publication } }">{{ cocktail.publication }}</RouterLink>
                 </dd>
