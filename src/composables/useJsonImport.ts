@@ -26,6 +26,8 @@ export function useJsonImport() {
                 author: parsed.author ?? null,
                 year: parsed.year == null ? null : String(parsed.year),
                 parentName: parsed.parent ?? null,
+                parentId: parsed.parent_id ?? null,
+                utensils: parsed.utensils ?? [],
                 tags: parsed.tags ?? [],
                 glassName: parsed.glass ?? null,
                 methodName: parsed.method ?? null,
@@ -46,6 +48,7 @@ export function useJsonImport() {
                             amount: i.amount ?? null,
                             amount_max: i.amount_max ?? null,
                             note: i.note ?? null,
+                            description: i.description ?? null,
                             substitutes:
                                 i.substitutes?.map((s) => {
                                     return {
