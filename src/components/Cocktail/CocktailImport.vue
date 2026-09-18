@@ -594,14 +594,14 @@ init();
                     <textarea id="description" v-model="result.description" class="form-input" rows="4"></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="source">Weblink</label>
-                    <input id="source" v-model="result.source" type="text" class="form-input" />
-                </div>
-                <div class="form-group">
                     <label class="form-label" for="publication">Source</label>
                     <input id="publication" v-model="result.publication" type="text" class="form-input" />
                 </div>
                 <div class="sr-grid sr-grid--3-col">
+                    <div class="form-group">
+                        <label class="form-label" for="source">Weblink</label>
+                        <input id="source" v-model="result.source" type="text" class="form-input" />
+                    </div>
                     <div class="form-group">
                         <label class="form-label" for="author">{{ t("author.title") }}</label>
                         <input id="author" v-model="result.author" type="text" class="form-input" />
@@ -609,10 +609,6 @@ init();
                     <div class="form-group">
                         <label class="form-label" for="year">{{ t("year") }}</label>
                         <input id="year" v-model="result.year" type="text" class="form-input" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="parent">Parent</label>
-                        <input id="parent" v-model="result.parentName" type="text" class="form-input" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -634,6 +630,10 @@ init();
                 <div class="form-group">
                     <label class="form-label" for="utensils">{{ t("utensils.title") }}</label>
                     <input id="utensils" v-model="cocktailUtensils" type="text" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="parent">Parent</label>
+                    <input id="parent" v-model="result.parentName" type="text" class="form-input" />
                 </div>
                 <template v-for="image in result.images" :key="image.uri">
                     <div class="form-group">
