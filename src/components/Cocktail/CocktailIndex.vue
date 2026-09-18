@@ -78,7 +78,7 @@
                         id="publication"
                         v-model="activeFilters.publication"
                         :searchable="true"
-                        title="Source/Publication"
+                        title="Source"
                         :refinements="refinePublications"
                         @change="updateRouterPath"
                     ></Refinement>
