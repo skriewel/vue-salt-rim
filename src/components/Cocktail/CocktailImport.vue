@@ -338,6 +338,7 @@ async function finishImporting() {
         instructions: result.value.instructions,
         garnish: result.value.garnish,
         source: result.value.source,
+        publication: result.value.publication,
         method: { id: matchedMethod?.id },
         glass: matchedGlass,
         images:
@@ -538,6 +539,10 @@ init();
                 <div class="form-group">
                     <label class="form-label" for="source">{{ t("source") }}</label>
                     <input id="source" v-model="result.source" type="text" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="publication">Source/Publication</label>
+                    <input id="publication" v-model="result.publication" type="text" class="form-input" />
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="glass">{{ t("glass-type.title") }}</label>
