@@ -8,6 +8,7 @@ export interface ImportResult {
     instructions: string;
     garnish: string | null;
     source: string;
+    publication?: string | null;
     author?: string | null;
     year?: string | null;
     parentName?: string | null;
