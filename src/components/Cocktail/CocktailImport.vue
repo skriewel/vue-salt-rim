@@ -29,6 +29,7 @@ type Bar = components["schemas"]["Bar"];
 type Glass = components["schemas"]["Glass"];
 type FullIngredient = components["schemas"]["Ingredient"];
 type CocktailMethod = components["schemas"]["CocktailMethod"];
+type Utensil = components["schemas"]["Utensil"];
 
 const urlImporter = useUrlImport();
 const jsonImporter = useJsonImport();
@@ -78,6 +79,27 @@ const cocktailTags = computed({
             result.value.tags = [];
         } else {
             result.value.tags = Array.from(new Set(newVal.split(",").filter((t) => t != "")));
+        }
+    },
+});
+
+const cocktailUtensils = computed({
+    get() {
+        return result.value?.utensils?.join(",");
+    },
+    set(newVal) {
+        if (!result.value) {
+            return;
+        }
+
+        if (Array.isArray(newVal)) {
+            newVal = newVal.join(",");
+        }
+
+        if (newVal == "" || newVal == null || newVal == undefined) {
+            result.value.utensils = [];
+        } else {
+            result.value.utensils = Array.from(new Set(newVal.split(",").map((u) => u.trim()).filter((u) => u != "")));
         }
     },
 });
@@ -266,7 +288,7 @@ async function getMethod(methodName: string): Promise<CocktailMethod | null> {
     }
 }
 
-async function getOrCreateIngredient(ingredientName: string): Promise<FullIngredient | null> {
+async function getOrCreateIngredient(ingredientName: string, description: string | null = null): Promise<FullIngredient | null> {
     try {
         const response = await BarAssistantClient.getIngredients({ "filter[name_exact]": ingredientName.toLowerCase(), per_page: 1 });
         const dbIngredient = response?.data?.[0] ?? null;
@@ -275,13 +297,42 @@ async function getOrCreateIngredient(ingredientName: string): Promise<FullIngred
             return dbIngredient;
         }
 
-        const newIngredientId = await BarAssistantClient.saveIngredient({ name: ingredientName });
+        const newIngredientId = await BarAssistantClient.saveIngredient({ name: ingredientName, description: description });
         const newIngredient = await BarAssistantClient.getIngredient(newIngredientId);
 
         return newIngredient?.data ?? null;
     } catch (error) {
         return null;
     }
+}
+
+async function getMatchingUtensils(utensilNames: string[]): Promise<Utensil[]> {
+    if (utensilNames.length === 0) {
+        return [];
+    }
+
+    const response = await BarAssistantClient.getUtensils();
+    const utensils = response?.data ?? [];
+    const wanted = new Set(utensilNames.map((name) => name.toLowerCase()));
+
+    return utensils.filter((utensil) => wanted.has(utensil.name.toLowerCase()));
+}
+
+async function getMatchingParent(parentId: number | null | undefined, parentName: string | null | undefined): Promise<Cocktail | null> {
+    if (parentId) {
+        try {
+            return (await BarAssistantClient.getCocktail(String(parentId)))?.data ?? null;
+        } catch (error) {
+            // Fall back to exact name matching below.
+        }
+    }
+
+    if (!parentName) {
+        return null;
+    }
+
+    const response = await BarAssistantClient.getCocktails({ "filter[name]": parentName.toLowerCase(), per_page: 20 });
+    return response?.data?.find((cocktail) => cocktail.name.toLowerCase() === parentName.toLowerCase()) ?? null;
 }
 
 async function finishImporting() {
@@ -300,12 +351,15 @@ async function finishImporting() {
         matchedMethod = (await getMethod(result.value.methodName)) ?? null;
     }
 
+    const matchedUtensils = await getMatchingUtensils(result.value.utensils ?? []);
+    const matchedParent = await getMatchingParent(result.value.parentId, result.value.parentName);
+
     for (const ingredient of result.value.ingredients) {
         if (ingredient.matchedIngredient) {
             continue;
         }
 
-        const foundIngredient = await getOrCreateIngredient(ingredient.name);
+        const foundIngredient = await getOrCreateIngredient(ingredient.name, ingredient.description);
         if (foundIngredient) {
             ingredient.matchedIngredient = {
                 id: foundIngredient.id,
@@ -339,6 +393,9 @@ async function finishImporting() {
         garnish: result.value.garnish,
         source: result.value.source,
         publication: result.value.publication,
+        author: result.value.author,
+        year: result.value.year,
+        parent_cocktail: matchedParent,
         method: { id: matchedMethod?.id },
         glass: matchedGlass,
         images:
@@ -369,7 +426,7 @@ async function finishImporting() {
                 ingredient: ing.matchedIngredient,
             };
         }),
-        utensils: [],
+        utensils: matchedUtensils,
     };
 
     sessionStorage.setItem("scrapeResult", JSON.stringify(cocktail));
@@ -544,6 +601,20 @@ init();
                     <label class="form-label" for="publication">Source</label>
                     <input id="publication" v-model="result.publication" type="text" class="form-input" />
                 </div>
+                <div class="sr-grid sr-grid--3-col">
+                    <div class="form-group">
+                        <label class="form-label" for="author">{{ t("author.title") }}</label>
+                        <input id="author" v-model="result.author" type="text" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="year">{{ t("year") }}</label>
+                        <input id="year" v-model="result.year" type="text" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="parent">Parent</label>
+                        <input id="parent" v-model="result.parentName" type="text" class="form-input" />
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label" for="glass">{{ t("glass-type.title") }}</label>
                     <input id="glass" v-model="result.glassName" type="text" class="form-input" />
@@ -559,6 +630,10 @@ init();
                 <div class="form-group">
                     <label class="form-label" for="method">{{ t("method.title") }}</label>
                     <input id="method" v-model="result.methodName" type="text" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="utensils">{{ t("utensils.title") }}</label>
+                    <input id="utensils" v-model="cocktailUtensils" type="text" class="form-input" />
                 </div>
                 <template v-for="image in result.images" :key="image.uri">
                     <div class="form-group">
@@ -608,6 +683,10 @@ init();
                         <div class="form-group">
                             <label class="form-label" :for="'ingredient_note_' + idx">{{ t("note.title") }}</label>
                             <input :id="'ingredient_note_' + idx" v-model="ingredient.note" type="text" class="form-input" />
+                        </div>
+                        <div v-if="ingredient.description" class="form-group">
+                            <label class="form-label" :for="'ingredient_description_' + idx">{{ t("description") }}</label>
+                            <input :id="'ingredient_description_' + idx" v-model="ingredient.description" type="text" class="form-input" />
                         </div>
                     </div>
                     <div v-if="ingredient.matchedIngredient != null" class="scraper-ingredients__ingredient__existing">
