@@ -148,8 +148,8 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label" for="publication">Quelle (Publikation):</label>
-                <input id="publication" v-model="cocktail.publication" class="form-input" type="text" placeholder="Buch, Magazin oder andere Publikation..." />
+                <label class="form-label" for="publication">Source:</label>
+                <input id="publication" v-model="cocktail.publication" class="form-input" type="text" placeholder="Book, magazine, or other publication..." />
             </div>
             <div class="sr-grid sr-grid--3-col">
                 <div class="form-group">
