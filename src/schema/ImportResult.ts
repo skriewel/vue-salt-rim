@@ -13,7 +13,7 @@ export interface ImportResult {
     year?: string | null;
     parentName?: string | null;
     parentId?: number | null;
-    utensils: string[];
+    utensils?: string[];
     tags: string[];
     glassName: string | null;
     methodName: string | null;
@@ -29,7 +29,7 @@ export interface ImportResult {
         amount_max: number | null;
         units: string | null;
         note: string | null;
-        description: string | null;
+        description?: string | null;
         substitutes: {
             matchedIngredient: Ingredient | null;
             name: string;
