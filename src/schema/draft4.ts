@@ -63,6 +63,10 @@ export interface CocktailRecipeDraft04 {
      */
     method?: string | null;
     /**
+     * List of utensils used to prepare the cocktail
+     */
+    utensils?: string[];
+    /**
      * List of cocktail images
      */
     images?: Image[];
@@ -115,6 +119,10 @@ export interface CocktailIngredient {
      * Additional note related to the cocktail ingredient
      */
     note?: string | null;
+    /**
+     * Description to use when this ingredient has to be created during import
+     */
+    description?: string | null;
     substitutes?: CocktailIngredientSubstitute[];
 }
 export interface CocktailIngredientSubstitute {
