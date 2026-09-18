@@ -19,6 +19,10 @@ export interface CocktailRecipeDraft04 {
      */
     source?: string | null;
     /**
+     * Original publication, book or magazine containing the recipe
+     */
+    publication?: string | null;
+    /**
      * Recipe description
      */
     description?: string | null;
