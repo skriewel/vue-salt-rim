@@ -597,19 +597,17 @@ init();
                     <label class="form-label" for="publication">Source</label>
                     <input id="publication" v-model="result.publication" type="text" class="form-input" />
                 </div>
-                <div class="import-metadata-grid">
-                    <div class="form-group">
-                        <label class="form-label" for="source">Weblink</label>
-                        <input id="source" v-model="result.source" type="text" class="form-input" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="author">{{ t("author.title") }}</label>
-                        <input id="author" v-model="result.author" type="text" class="form-input" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="year">{{ t("year") }}</label>
-                        <input id="year" v-model="result.year" type="text" class="form-input" />
-                    </div>
+                <div class="form-group">
+                    <label class="form-label" for="source">Weblink</label>
+                    <input id="source" v-model="result.source" type="text" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="author">{{ t("author.title") }}</label>
+                    <input id="author" v-model="result.author" type="text" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="year">{{ t("year") }}</label>
+                    <input id="year" v-model="result.year" type="text" class="form-input" />
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="glass">{{ t("glass-type.title") }}</label>
@@ -768,42 +766,19 @@ init();
 
 <style scoped>
 .scraper-form .form-group {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: block;
 }
 
 .scraper-form .form-group label {
-    flex-basis: 250px;
+    display: block;
+    margin-bottom: var(--gap-size-1);
 }
 
 .scraper-form .form-group :is(input, select, textarea) {
-    flex-grow: 1;
-    width: auto;
-}
-
-.import-metadata-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--gap-size-2);
-}
-
-.import-metadata-grid .form-group {
-    display: block;
-    margin-bottom: 0;
-}
-
-.import-metadata-grid .form-group label,
-.import-metadata-grid .form-group :is(input, select, textarea) {
     display: block;
     width: 100%;
 }
 
-@media (max-width: 900px) {
-    .import-metadata-grid {
-        grid-template-columns: 1fr;
-    }
-}
 
 .scraper-ingredients__ingredient {
     margin-bottom: 1rem;
