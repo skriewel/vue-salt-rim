@@ -22,6 +22,7 @@ export function useJsonImport() {
                 instructions: parsed.instructions,
                 garnish: parsed.garnish ?? null,
                 source: parsed.source ?? "",
+                publication: parsed.publication ?? null,
                 author: parsed.author ?? null,
                 year: parsed.year == null ? null : String(parsed.year),
                 parentName: parsed.parent ?? null,
@@ -63,6 +64,7 @@ export function useJsonImport() {
                 IMPORT_METADATA_KEY,
                 JSON.stringify({
                     name: parsed.name,
+                    publication: parsed.publication ?? null,
                     author: parsed.author ?? null,
                     year: parsed.year == null ? null : String(parsed.year),
                     parent: parsed.parent ?? null,
