@@ -288,7 +288,7 @@ async function getMethod(methodName: string): Promise<CocktailMethod | null> {
     }
 }
 
-async function getOrCreateIngredient(ingredientName: string, description: string | null = null): Promise<FullIngredient | null> {
+async function getOrCreateIngredient(ingredientName: string, description: string | null | undefined = null): Promise<FullIngredient | null> {
     try {
         const response = await BarAssistantClient.getIngredients({ "filter[name_exact]": ingredientName.toLowerCase(), per_page: 1 });
         const dbIngredient = response?.data?.[0] ?? null;
@@ -297,7 +297,7 @@ async function getOrCreateIngredient(ingredientName: string, description: string
             return dbIngredient;
         }
 
-        const newIngredientId = await BarAssistantClient.saveIngredient({ name: ingredientName, description: description });
+        const newIngredientId = await BarAssistantClient.saveIngredient({ name: ingredientName, description: description ?? null });
         const newIngredient = await BarAssistantClient.getIngredient(newIngredientId);
 
         return newIngredient?.data ?? null;
