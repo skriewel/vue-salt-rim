@@ -597,7 +597,7 @@ init();
                     <label class="form-label" for="publication">Source</label>
                     <input id="publication" v-model="result.publication" type="text" class="form-input" />
                 </div>
-                <div class="sr-grid sr-grid--3-col">
+                <div class="import-metadata-grid">
                     <div class="form-group">
                         <label class="form-label" for="source">Weblink</label>
                         <input id="source" v-model="result.source" type="text" class="form-input" />
@@ -780,6 +780,29 @@ init();
 .scraper-form .form-group :is(input, select, textarea) {
     flex-grow: 1;
     width: auto;
+}
+
+.import-metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-size-2);
+}
+
+.import-metadata-grid .form-group {
+    display: block;
+    margin-bottom: 0;
+}
+
+.import-metadata-grid .form-group label,
+.import-metadata-grid .form-group :is(input, select, textarea) {
+    display: block;
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .import-metadata-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .scraper-ingredients__ingredient {
