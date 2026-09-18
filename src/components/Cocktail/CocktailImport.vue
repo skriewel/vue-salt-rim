@@ -537,11 +537,11 @@ init();
                     <textarea id="description" v-model="result.description" class="form-input" rows="4"></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="source">{{ t("source") }}</label>
+                    <label class="form-label" for="source">Weblink</label>
                     <input id="source" v-model="result.source" type="text" class="form-input" />
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="publication">Source/Publication</label>
+                    <label class="form-label" for="publication">Source</label>
                     <input id="publication" v-model="result.publication" type="text" class="form-input" />
                 </div>
                 <div class="form-group">
