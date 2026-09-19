@@ -8762,6 +8762,18 @@ export interface operations {
                      * @description Show only ingredients with strength less than or equal to given value
                      */
                     strength_max?: number;
+                    /**
+                     * Format: float
+                     * @description Show only ingredients the requesting member has rated greater than or equal to given value
+                     */
+                    user_rating_min?: number;
+                    /**
+                     * Format: float
+                     * @description Show only ingredients with an average rating greater than or equal to given value
+                     */
+                    average_rating_min?: number;
+                    /** @description Show only ingredients with a review recommendation in the given comma separated list of `avoid`, `decent`, `recommend` */
+                    review_recommendation?: string;
                     /** @description Show only ingredients that are used as main ingredients in cocktails */
                     main_ingredients?: boolean;
                     /** @description Show only ingredients that can be made with other ingredients */
@@ -8834,10 +8846,10 @@ export interface operations {
                             total?: number;
                             filters?: {
                                 origins: {
-                                    name?: string;
+                                    name: string;
                                 }[];
                                 distilleries: {
-                                    name?: string;
+                                    name: string;
                                 }[];
                             };
                         };
