@@ -40,6 +40,12 @@
                     <RouterLink :to="{ name: 'cocktails', query: { 'filter[author]': cocktail.author } }">{{ cocktail.author }}</RouterLink>
                 </dd>
             </template>
+            <template v-if="cocktail.origin_bar">
+                <dt>{{ t("origin-bar.title") }}</dt>
+                <dd>
+                    <RouterLink :to="{ name: 'cocktails', query: { 'filter[origin_bar]': cocktail.origin_bar } }">{{ cocktail.origin_bar }}</RouterLink>
+                </dd>
+            </template>
             <template v-if="cocktail.abv && cocktail.abv > 0">
                 <dt>{{ t("ABV") }}</dt>
                 <dd>
@@ -96,8 +102,8 @@ function onRated(rating: number) {
 
 function isValidUrl(input: string) {
     try {
-        new URL(input.startsWith("http") ? input : `https://${input}`);
-        return true;
+        const url = new URL(input);
+        return url.protocol === "http:" || url.protocol === "https:";
     } catch (err) {
         return false;
     }

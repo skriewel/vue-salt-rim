@@ -178,7 +178,8 @@
         "external-image": "Paste image URL",
         "cocktail-year": "Cocktail recipe release year",
         "filter-refinement": "Filter refinement...",
-        "author": "Historical recipe author"
+        "author": "Historical recipe author",
+        "origin-bar": "Historical bar or venue of origin"
     },
     "amount": "Amount",
     "units": "Units",
@@ -804,6 +805,9 @@
     },
     "author": {
         "title": "Forfatter"
+    },
+    "origin-bar": {
+        "title": "Origin bar"
     },
     "about": {
         "title": "About",

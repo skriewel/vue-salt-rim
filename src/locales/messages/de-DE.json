@@ -178,7 +178,8 @@
         "external-image": "Bild-URL einfügen",
         "cocktail-year": "Jahr der Veröffentlichung des Cocktailrezepts",
         "filter-refinement": "Filter verfeinern...",
-        "author": "Historischer Autor des Rezepts"
+        "author": "Historischer Autor des Rezepts",
+        "origin-bar": "Historical bar or venue of origin"
     },
     "amount": "Menge",
     "units": "Einheiten",
@@ -804,6 +805,9 @@
     },
     "author": {
         "title": "Autor"
+    },
+    "origin-bar": {
+        "title": "Origin bar"
     },
     "about": {
         "title": "Über",

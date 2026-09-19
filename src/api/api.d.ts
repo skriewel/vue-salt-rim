@@ -2974,6 +2974,11 @@ export interface components {
              * @example Jerry Thomas
              */
             author?: string | null;
+            /**
+             * @description Historical bar or venue where the cocktail was originally created
+             * @example American Bar, London
+             */
+            origin_bar?: string | null;
         };
         /** @description Collection resource */
         Collection: {
@@ -4337,6 +4342,8 @@ export interface components {
             year?: number | null;
             /** @example Jerry Thomas */
             author?: string | null;
+            /** @example American Bar, London */
+            origin_bar?: string | null;
         };
         CollectionRequest: {
             /**
@@ -6354,6 +6361,8 @@ export interface operations {
                     created_user_id?: string;
                     /** @description Filter by cocktail author name(s). Comma separated list of author names. Exact match. */
                     author?: string;
+                    /** @description Filter by origin bar name(s). Comma separated list of origin bar names. Exact match. */
+                    origin_bar?: string;
                     /** @description Filter by glass ID(s) */
                     glass_id?: string;
                     /** @description Filter by cocktail method ID(s) */
@@ -6474,6 +6483,9 @@ export interface operations {
                             total?: number;
                             filters?: {
                                 authors: {
+                                    name?: string;
+                                }[];
+                                origin_bars: {
                                     name?: string;
                                 }[];
                             };

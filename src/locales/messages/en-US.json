@@ -178,7 +178,8 @@
         "external-image": "Paste image URL",
         "cocktail-year": "Cocktail recipe release year",
         "filter-refinement": "Filter refinement...",
-        "author": "Historical recipe author"
+        "author": "Historical recipe author",
+        "origin-bar": "Historical bar or venue of origin"
     },
     "amount": "Amount",
     "units": "Units",
@@ -733,6 +734,7 @@
         "delete-confirm": "This will permanently delete calculator with name \"{name}\".",
         "delete-success": "Calculator deleted successfully",
         "empty": "There are no calculators added yet",
+        "no-results": "No calculators match your search",
         "confirm-eval-delete": "This will remove selected evaluation",
         "confirm-input-delete": "This will remove selected input",
         "inputs-description": "In this section, you define all your required inputs that will change the result of your evaluations. Each input can be used in all evaluations.",
@@ -816,6 +818,9 @@
     },
     "author": {
         "title": "Author"
+    },
+    "origin-bar": {
+        "title": "Origin bar"
     },
     "about": {
         "title": "About",

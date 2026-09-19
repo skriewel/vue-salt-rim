@@ -178,7 +178,8 @@
         "external-image": "Liitä kuvan URL",
         "cocktail-year": "Juomaohjeen julkaisuvuosi",
         "filter-refinement": "Suodata vaihtoehtoja...",
-        "author": "Historical recipe author"
+        "author": "Historical recipe author",
+        "origin-bar": "Historical bar or venue of origin"
     },
     "amount": "Määrä",
     "units": "Yksikkö",
@@ -804,6 +805,9 @@
     },
     "author": {
         "title": "Tekijä"
+    },
+    "origin-bar": {
+        "title": "Origin bar"
     },
     "about": {
         "title": "About",

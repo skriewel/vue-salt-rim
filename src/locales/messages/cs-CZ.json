@@ -178,7 +178,8 @@
         "external-image": "Vložit URL obrázku",
         "cocktail-year": "Rok vydání receptů koktejlu",
         "filter-refinement": "Filter refinement...",
-        "author": "Historical recipe author"
+        "author": "Historical recipe author",
+        "origin-bar": "Historical bar or venue of origin"
     },
     "amount": "Množství",
     "units": "Jednotky",
@@ -804,6 +805,9 @@
     },
     "author": {
         "title": "Autor"
+    },
+    "origin-bar": {
+        "title": "Origin bar"
     },
     "about": {
         "title": "About",
