@@ -69,6 +69,19 @@
                         </label>
                     </div>
                 </div>
+                <div class="api-ability">
+                    <h4>{{ $t("shelf.title") }}</h4>
+                    <div class="api-ability__options">
+                        <label class="form-checkbox">
+                            <input v-model="apiKey.abilities" type="checkbox" value="inventory.read" />
+                            <span>{{ $t("api.read") }}</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input v-model="apiKey.abilities" type="checkbox" value="inventory.write" />
+                            <span>{{ $t("api.write") }}</span>
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="dialog-actions">
                 <button class="button button--outline" @click.prevent="$emit('apiKeyDialogClosed')">{{ $t("cancel") }}</button>
