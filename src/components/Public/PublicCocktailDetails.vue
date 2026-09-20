@@ -143,11 +143,9 @@ const isValidURL = computed(() => {
         return false;
     }
 
-    const source = props.cocktail.source || "";
-
     try {
-        new URL(source.startsWith("http") ? source : `https://${source}`);
-        return true;
+        const url = new URL(props.cocktail.source);
+        return url.protocol === "http:" || url.protocol === "https:";
     } catch (err) {
         return false;
     }

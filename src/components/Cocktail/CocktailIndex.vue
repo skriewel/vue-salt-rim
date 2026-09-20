@@ -75,6 +75,14 @@
                         @change="updateRouterPath"
                     ></Refinement>
                     <Refinement
+                        id="origin-bar"
+                        v-model="activeFilters.origin_bar"
+                        :searchable="true"
+                        :title="$t('origin-bar.title')"
+                        :refinements="refineOriginBars"
+                        @change="updateRouterPath"
+                    ></Refinement>
+                    <Refinement
                         id="favorited-by-user"
                         v-model="activeFilters.favorited_by_user"
                         :searchable="true"
@@ -101,11 +109,11 @@
                     <Refinement id="year" :title="$t('year')">
                         <div class="cocktail-index__year-range">
                             <div>
-                                <label for="year-min">{{ $t('minimum') }}</label>
+                                <label for="year-min">{{ $t("minimum") }}</label>
                                 <input id="year-min" v-model.number="activeFilters.year_min" class="form-input" type="number" step="1" @change="updateRouterPath" />
                             </div>
                             <div>
-                                <label for="year-max">{{ $t('maximum') }}</label>
+                                <label for="year-max">{{ $t("maximum") }}</label>
                                 <input id="year-max" v-model.number="activeFilters.year_max" class="form-input" type="number" step="1" @change="updateRouterPath" />
                             </div>
                         </div>
@@ -350,6 +358,7 @@ interface ActiveFilters {
     user_shelves: string[];
     created_user_id: string[];
     author: string[];
+    origin_bar: string[];
     favorited_by_user: string[];
     ignore_ingredients: string[];
     specific_ingredients: string[];
@@ -373,6 +382,7 @@ interface AvailableRefinements {
     shared_collections: any[];
     members: any[];
     authors: { name: string }[];
+    origin_bars: { name: string }[];
 }
 
 const route = useRoute();
@@ -409,6 +419,7 @@ const availableRefinements = ref<AvailableRefinements>({
     shared_collections: [],
     members: [],
     authors: [],
+    origin_bars: [],
 });
 
 const activeFilters = ref<ActiveFilters>({
@@ -434,6 +445,7 @@ const activeFilters = ref<ActiveFilters>({
     user_shelves: [],
     created_user_id: [],
     author: [],
+    origin_bar: [],
     favorited_by_user: [],
     ignore_ingredients: [],
     specific_ingredients: [],
@@ -562,6 +574,14 @@ const refineAuthors = computed(() => {
     }));
 });
 
+const refineOriginBars = computed(() => {
+    return availableRefinements.value.origin_bars.map((o: any) => ({
+        id: o.name,
+        value: o.name,
+        name: o.name,
+    }));
+});
+
 const currentCocktailIds = computed(() => {
     return cocktails.value.map((c) => c.id);
 });
@@ -670,6 +690,7 @@ function refreshCocktails() {
             cocktails.value = resp?.data ?? [];
             meta.value = resp?.meta;
             availableRefinements.value.authors = resp?.meta?.filters?.authors ?? [];
+            availableRefinements.value.origin_bars = resp?.meta?.filters?.origin_bars ?? [];
             isLoading.value = false;
         })
         .catch((e) => {
@@ -695,6 +716,7 @@ function queryToState() {
     activeFilters.value.user_shelves = state.filter && state.filter.user_shelves ? String(state.filter.user_shelves).split(",") : [];
     activeFilters.value.created_user_id = state.filter && state.filter.created_user_id ? String(state.filter.created_user_id).split(",") : [];
     activeFilters.value.author = state.filter && state.filter.author ? String(state.filter.author).split(",") : [];
+    activeFilters.value.origin_bar = state.filter && state.filter.origin_bar ? String(state.filter.origin_bar).split(",") : [];
     activeFilters.value.favorited_by_user = state.filter && state.filter.favorited_by_user ? String(state.filter.favorited_by_user).split(",") : [];
     activeFilters.value.on_shelf = state.filter && state.filter.on_shelf ? state.filter.on_shelf : null;
     activeFilters.value.bar_shelf = state.filter && state.filter.bar_shelf ? state.filter.bar_shelf : null;
@@ -765,6 +787,7 @@ function stateToQuery() {
         id: activeFilters.value.id.length > 0 ? activeFilters.value.id.join(",") : null,
         created_user_id: activeFilters.value.created_user_id.length > 0 ? activeFilters.value.created_user_id.join(",") : null,
         author: activeFilters.value.author.length > 0 ? activeFilters.value.author.join(",") : null,
+        origin_bar: activeFilters.value.origin_bar.length > 0 ? activeFilters.value.origin_bar.join(",") : null,
         favorited_by_user: activeFilters.value.favorited_by_user.length > 0 ? activeFilters.value.favorited_by_user.join(",") : null,
         abv_min: activeFilters.value.abv ? activeFilters.value.abv.min : null,
         abv_max: activeFilters.value.abv ? activeFilters.value.abv.max : null,
@@ -833,6 +856,7 @@ function clearRefinements() {
         user_shelves: [],
         created_user_id: [],
         author: [],
+        origin_bar: [],
         favorited_by_user: [],
         ignore_ingredients: [],
         specific_ingredients: [],
