@@ -83,6 +83,14 @@
                         @change="updateRouterPath"
                     ></Refinement>
                     <Refinement
+                        id="origin-bar"
+                        v-model="activeFilters.origin_bar"
+                        :searchable="true"
+                        :title="$t('origin-bar.title')"
+                        :refinements="refineOriginBars"
+                        @change="updateRouterPath"
+                    ></Refinement>
+                    <Refinement
                         id="favorited-by-user"
                         v-model="activeFilters.favorited_by_user"
                         :searchable="true"
@@ -147,7 +155,15 @@
                         id="user-rating"
                         v-model="activeFilters.user_rating_min as any"
                         :title="$t('your-rating')"
-                        :refinements="refineRatings"
+                        :refinements="refineUserRatings"
+                        type="radio"
+                        @change="updateRouterPath"
+                    ></Refinement>
+                    <Refinement
+                        id="last-tapped"
+                        v-model="activeFilters.last_tapped_period as any"
+                        title="Last tapped"
+                        :refinements="refineLastTapped"
                         type="radio"
                         @change="updateRouterPath"
                     ></Refinement>
@@ -185,6 +201,7 @@
                         <option disabled>{{ $t("sort") }}:</option>
                         <option value="name">{{ $t("name") }}</option>
                         <option value="created_at">{{ $t("date-added") }}</option>
+                        <option value="last_tapped_on">Last tapped</option>
                         <option value="favorited_at">{{ $t("date-favorited") }}</option>
                         <option value="missing_bar_ingredients">{{ $t("missing-ingredients") }} ({{ $t("bars.bar") }})</option>
                         <option value="total_ingredients">{{ $t("total.ingredients") }}</option>
@@ -209,7 +226,7 @@
                     <button type="button" class="button button--input" :title="$t('cocktail.randomize')" @click.prevent="goToRandomCocktail">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                             <path
-                                d="M10.9979 1.58018C11.6178 1.22132 12.3822 1.22132 13.0021 1.58018L20.5021 5.92229C21.1197 6.27987 21.5 6.93946 21.5 7.65314V16.3469C21.5 17.0606 21.1197 17.7202 20.5021 18.0778L13.0021 22.4199C12.3822 22.7788 11.6178 22.7788 10.9979 22.4199L3.49793 18.0778C2.88029 17.7202 2.5 17.0606 2.5 16.3469V7.65314C2.5 6.93947 2.88029 6.27987 3.49793 5.92229L10.9979 1.58018ZM4.5 7.65314V7.65792L11.0021 11.4223C11.6197 11.7799 12 12.4395 12 13.1531V20.689L19.5 16.3469V7.65314L12 3.31104L4.5 7.65314ZM6.13208 12.3C6.13206 11.7477 5.74432 11.0761 5.26604 10.7999C4.78776 10.5238 4.40004 10.7476 4.40006 11.2999C4.40008 11.8522 4.78782 12.5238 5.2661 12.7999C5.74439 13.0761 6.1321 12.8523 6.13208 12.3ZM8.72899 18.7982C9.20728 19.0743 9.59499 18.8505 9.59497 18.2982C9.59495 17.7459 9.20721 17.0743 8.72893 16.7982C8.25065 16.522 7.86293 16.7459 7.86295 17.2982C7.86297 17.8504 8.25071 18.522 8.72899 18.7982ZM5.2661 16.799C5.74439 17.0751 6.1321 16.8513 6.13208 16.299C6.13206 15.7467 5.74432 15.0751 5.26604 14.799C4.78776 14.5228 4.40004 14.7467 4.40006 15.2989C4.40008 15.8512 4.78782 16.5228 5.2661 16.799ZM8.72851 14.7995C9.20679 15.0756 9.5945 14.8518 9.59448 14.2995C9.59446 13.7472 9.20673 15.0756 8.72844 14.7995C8.25016 14.5233 7.86245 14.7471 7.86246 15.2994C7.86248 15.8517 8.25022 16.5233 8.72851 16.7995ZM14.8979 8.00001C15.3762 7.72388 15.3762 7.27619 14.8979 7.00006C14.4196 6.72394 13.6441 6.72394 13.1658 7.00006C12.6875 7.27619 12.6875 7.72388 13.1658 8.00001C13.6441 8.27614 14.4196 8.27614 14.8979 8.00001ZM10.0981 7.00006C10.5764 7.27619 10.5764 7.72388 10.0981 8.00001C9.61982 8.27614 8.84434 8.27614 8.36604 8.00001C7.88774 7.72388 7.88774 7.27619 8.36604 7.00006C8.84434 6.72394 9.61982 6.72394 10.0981 7.00006ZM15.9954 15.3495C16.5932 15.0043 17.0779 14.1649 17.0779 13.4745C17.0779 12.7842 16.5933 12.5044 15.9955 12.8496C15.3977 13.1948 14.9131 14.0342 14.913 14.7246C14.913 15.4149 15.3976 15.6947 15.9954 15.3495Z"
+                                d="M10.9979 1.58018C11.6178 1.22132 12.3822 1.22132 13.0021 1.58018L20.5021 5.92229C21.1197 6.27987 21.5 6.93946 21.5 7.65314V16.3469C21.5 17.0606 21.1197 17.7202 20.5021 18.0778L13.0021 22.4199C12.3822 22.7788 11.6178 22.7788 10.9979 22.4199L3.49793 18.0778C2.88029 17.7202 2.5 17.0606 2.5 16.3469V7.65314C2.5 6.93947 2.88029 6.27987 3.49793 5.92229L10.9979 1.58018ZM4.5 7.65314V7.65792L11.0021 11.4223C11.6197 11.7799 12 12.4395 12 13.1531V20.689L19.5 16.3469V7.65314L12 3.31104L4.5 7.65314ZM6.13208 12.3C6.13206 11.7477 5.74432 11.0761 5.26604 10.7999C4.78776 10.5238 4.40004 10.7476 4.40006 11.2999C4.40008 11.8522 4.78782 12.5238 5.2661 12.7999C5.74439 13.0761 6.1321 12.8523 6.13208 12.3ZM8.72899 18.7982C9.20728 19.0743 9.59499 18.8505 9.59497 18.2982C9.59495 17.7459 9.20721 17.0743 8.72893 16.7982C8.25065 16.522 7.86293 16.7459 7.86295 17.2982C7.86297 17.8504 8.25071 18.522 8.72899 18.7982ZM5.2661 16.799C5.74439 17.0751 6.1321 16.8513 6.13208 16.299C6.13206 15.7467 5.74432 15.0751 5.26604 14.799C4.78776 14.5228 4.40004 14.7467 4.40006 15.2989C4.40008 15.8512 4.78782 16.5228 5.2661 16.799ZM8.72851 14.7995C9.20679 15.0756 9.5945 14.8518 9.59448 14.2995C9.59446 13.7472 9.20673 13.0756 8.72844 12.7995C8.25016 12.5233 7.86245 12.7471 7.86246 13.2994C7.86248 13.8517 8.25022 14.5233 8.72851 14.7995ZM14.8979 8.00001C15.3762 7.72388 15.3762 7.27619 14.8979 7.00006C14.4196 6.72394 13.6441 6.72394 13.1658 7.00006C12.6875 7.27619 12.6875 7.72388 13.1658 8.00001C13.6441 8.27614 14.4196 8.27614 14.8979 8.00001ZM10.0981 7.00006C10.5764 7.27619 10.5764 7.72388 10.0981 8.00001C9.61982 8.27614 8.84434 8.27614 8.36604 8.00001C7.88774 7.72388 7.88774 7.27619 8.36604 7.00006C8.84434 6.72394 9.61982 6.72394 10.0981 7.00006ZM15.9954 15.3495C16.5932 15.0043 17.0779 14.1649 17.0779 13.4745C17.0779 12.7842 16.5933 12.5044 15.9955 12.8496C15.3977 13.1948 14.9131 14.0342 14.913 14.7246C14.913 15.4149 15.3976 15.6947 15.9954 15.3495Z"
                             ></path>
                         </svg>
                     </button>
@@ -267,7 +284,7 @@
                     <button v-show="totalActiveRefinements > 0" type="button" class="button button--input" :title="$t('clear-filters')" @click.prevent="clearRefinements">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                             <path
-                                d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.23858 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM12 10.5858L14.8284 7.75736L16.2426 9.17157L13.4142 12L16.2426 14.8284L14.8284 16.2426L12 13.4142L9.17157 16.2426L7.75736 14.8284L10.5858 12L7.75736 9.17157L9.17157 7.75736L12 10.5858Z"
+                                d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM12 10.5858L14.8284 7.75736L16.2426 9.17157L13.4142 12L16.2426 14.8284L14.8284 16.2426L12 13.4142L9.17157 16.2426L7.75736 14.8284L10.5858 12L7.75736 9.17157L9.17157 7.75736L12 10.5858Z"
                             ></path>
                         </svg>
                     </button>
@@ -339,7 +356,7 @@ interface ActiveFilters {
     cocktail_method_id: string[];
     main_ingredient_id: string[];
     collection_id: string[];
-    user_rating_min: number | null;
+    user_rating_min: number | string | null;
     average_rating_min: number | null;
     abv: { min: number | null; max: number | null } | null;
     year_min: number | null;
@@ -351,7 +368,9 @@ interface ActiveFilters {
     created_user_id: string[];
     author: string[];
     publication: string[];
+    origin_bar: string[];
     favorited_by_user: string[];
+    last_tapped_period: string | null;
     ignore_ingredients: string[];
     specific_ingredients: string[];
     ingredient_id: string[];
@@ -375,6 +394,7 @@ interface AvailableRefinements {
     members: any[];
     authors: { name: string }[];
     publications: { name: string }[];
+    origin_bars: { name: string }[];
 }
 
 const route = useRoute();
@@ -414,6 +434,7 @@ const availableRefinements = ref<AvailableRefinements>({
     members: [],
     authors: [],
     publications: [],
+    origin_bars: [],
 });
 
 const activeFilters = ref<ActiveFilters>({
@@ -440,7 +461,9 @@ const activeFilters = ref<ActiveFilters>({
     created_user_id: [],
     author: [],
     publication: [],
+    origin_bar: [],
     favorited_by_user: [],
+    last_tapped_period: null,
     ignore_ingredients: [],
     specific_ingredients: [],
     ingredient_id: [],
@@ -505,6 +528,21 @@ const refineRatings = computed(() => {
         name: ">= " + "★".repeat(r),
     }));
 });
+
+const refineUserRatings = computed(() => [
+    { id: "none", value: "none", name: "No rating" },
+    ...refineRatings.value,
+]);
+
+const refineLastTapped = computed(() => [
+    { id: "today", value: "today", name: "Today" },
+    { id: "7d", value: "7d", name: "Last 7 days" },
+    { id: "30d", value: "30d", name: "Last 30 days" },
+    { id: "3m", value: "3m", name: "Last 3 months" },
+    { id: "12m", value: "12m", name: "Last 12 months" },
+    { id: "older12m", value: "older12m", name: "More than 12 months ago" },
+    { id: "never", value: "never", name: "Never" },
+]);
 
 const refineMainIngredients = computed(() => {
     return availableRefinements.value.main_ingredients.map((i: any) => ({
@@ -576,6 +614,14 @@ const refinePublications = computed(() => {
     }));
 });
 
+const refineOriginBars = computed(() => {
+    return availableRefinements.value.origin_bars.map((originBar: any) => ({
+        id: originBar.name,
+        value: originBar.name,
+        name: originBar.name,
+    }));
+});
+
 const currentCocktailIds = computed(() => {
     return cocktails.value.map((c) => c.id);
 });
@@ -617,6 +663,7 @@ function initializeGlobalRefinements() {
     ];
 
     availableRefinements.value.total_ingredients = [
+        { name: "≤ " + t("n-ingredients", 3), active: false, id: "max3" },
         { name: ">= " + t("n-ingredients", 3), active: false, id: "3" },
         { name: ">= " + t("n-ingredients", 5), active: false, id: "5" },
         { name: ">= " + t("n-ingredients", 7), active: false, id: "7" },
@@ -717,6 +764,7 @@ function refreshCocktails() {
             meta.value = resp?.meta;
             availableRefinements.value.authors = resp?.meta?.filters?.authors ?? [];
             availableRefinements.value.publications = resp?.meta?.filters?.publications ?? [];
+            availableRefinements.value.origin_bars = resp?.meta?.filters?.origin_bars ?? [];
             isLoading.value = false;
         })
         .catch((e) => {
@@ -731,6 +779,59 @@ function handlePageChange(toPage: number) {
     updateRouterPath();
 }
 
+function formatLocalDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function shiftedDate({ days = 0, months = 0 }: { days?: number; months?: number }): string {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    if (months) date.setMonth(date.getMonth() - months);
+    if (days) date.setDate(date.getDate() - days);
+    return formatLocalDate(date);
+}
+
+function tapFiltersForPeriod(period: string | null): Record<string, string> {
+    switch (period) {
+        case "today":
+            return { tapped_after: shiftedDate({}) };
+        case "7d":
+            return { tapped_after: shiftedDate({ days: 6 }) };
+        case "30d":
+            return { tapped_after: shiftedDate({ days: 29 }) };
+        case "3m":
+            return { tapped_after: shiftedDate({ months: 3 }) };
+        case "12m":
+            return { tapped_after: shiftedDate({ months: 12 }) };
+        case "older12m":
+            return { tapped_before: shiftedDate({ months: 12 }) };
+        case "never":
+            return { never_tapped: "true" };
+        default:
+            return {};
+    }
+}
+
+function tapPeriodFromFilters(filter: Record<string, unknown>): string | null {
+    if (String(filter.never_tapped ?? "") === "true" || String(filter.never_tapped ?? "") === "1") return "never";
+    if (filter.tapped_before && !filter.tapped_after) return "older12m";
+    if (!filter.tapped_after) return null;
+
+    const after = String(filter.tapped_after);
+    const periods: Record<string, string> = {
+        today: shiftedDate({}),
+        "7d": shiftedDate({ days: 6 }),
+        "30d": shiftedDate({ days: 29 }),
+        "3m": shiftedDate({ months: 3 }),
+        "12m": shiftedDate({ months: 12 }),
+    };
+
+    return Object.entries(periods).find(([, value]) => value === after)?.[0] ?? null;
+}
+
 function queryToState() {
     const state = qs.parse(window.location.search.replace(/^\?/, "")) as ServerQueryFilters & { inventory?: string; inventory_id?: string };
 
@@ -743,6 +844,7 @@ function queryToState() {
     activeFilters.value.created_user_id = state.filter && state.filter.created_user_id ? String(state.filter.created_user_id).split(",") : [];
     activeFilters.value.author = state.filter && state.filter.author ? String(state.filter.author).split(",") : [];
     activeFilters.value.publication = state.filter && state.filter.publication ? String(state.filter.publication).split(",") : [];
+    activeFilters.value.origin_bar = state.filter && state.filter.origin_bar ? String(state.filter.origin_bar).split(",") : [];
     activeFilters.value.favorited_by_user = state.filter && state.filter.favorited_by_user ? String(state.filter.favorited_by_user).split(",") : [];
     activeFilters.value.on_shelf = String(state.inventory ?? "") === "1";
     activeFilters.value.bar_shelf = state.filter && state.filter.bar_shelf ? state.filter.bar_shelf : null;
@@ -759,6 +861,7 @@ function queryToState() {
     activeFilters.value.ingredient_id = state.filter && state.filter.ingredient_id ? String(state.filter.ingredient_id).split(",") : [];
     activeFilters.value.ingredient_substitute_id = state.filter && state.filter.ingredient_substitute_id ? String(state.filter.ingredient_substitute_id).split(",") : [];
     activeFilters.value.user_rating_min = state.filter && state.filter.user_rating_min ? state.filter.user_rating_min : null;
+    activeFilters.value.last_tapped_period = tapPeriodFromFilters((state.filter ?? {}) as Record<string, unknown>);
     activeFilters.value.average_rating_min = state.filter && state.filter.average_rating_min ? state.filter.average_rating_min : null;
     searchQuery.value = state.filter && state.filter.name ? state.filter.name : null;
     if (state.filter && (state.filter.abv_min || state.filter.abv_max)) {
@@ -818,7 +921,9 @@ function stateToQuery() {
         created_user_id: activeFilters.value.created_user_id.length > 0 ? activeFilters.value.created_user_id.join(",") : null,
         author: activeFilters.value.author.length > 0 ? activeFilters.value.author.join(",") : null,
         publication: activeFilters.value.publication.length > 0 ? activeFilters.value.publication.join(",") : null,
+        origin_bar: activeFilters.value.origin_bar.length > 0 ? activeFilters.value.origin_bar.join(",") : null,
         favorited_by_user: activeFilters.value.favorited_by_user.length > 0 ? activeFilters.value.favorited_by_user.join(",") : null,
+        ...tapFiltersForPeriod(activeFilters.value.last_tapped_period),
         abv_min: activeFilters.value.abv ? activeFilters.value.abv.min : null,
         abv_max: activeFilters.value.abv ? activeFilters.value.abv.max : null,
         year_min: activeFilters.value.year_min,
@@ -887,7 +992,9 @@ function clearRefinements() {
         created_user_id: [],
         author: [],
         publication: [],
+        origin_bar: [],
         favorited_by_user: [],
+        last_tapped_period: null,
         ignore_ingredients: [],
         specific_ingredients: [],
         ingredient_id: [],

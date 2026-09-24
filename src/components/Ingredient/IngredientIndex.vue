@@ -57,6 +57,29 @@
                         type="radio"
                         @change="updateRouterPath"
                     ></Refinement>
+                    <Refinement
+                        id="user-rating"
+                        v-model="activeFilters.filter.user_rating_min as any"
+                        :title="$t('your-rating')"
+                        :refinements="refineRatings"
+                        type="radio"
+                        @change="updateRouterPath"
+                    ></Refinement>
+                    <Refinement
+                        id="avg-rating"
+                        v-model="activeFilters.filter.average_rating_min as any"
+                        :title="$t('avg-rating')"
+                        :refinements="refineRatings"
+                        type="radio"
+                        @change="updateRouterPath"
+                    ></Refinement>
+                    <Refinement
+                        id="review-recommendation"
+                        v-model="activeFilters.filter.review_recommendation"
+                        :title="$t('review.recommendation-label')"
+                        :refinements="refineRecommendations"
+                        @change="updateRouterPath"
+                    ></Refinement>
                 </div>
             </div>
             <div class="resource-search__content">
@@ -217,6 +240,9 @@ const defaultRefinements = {
             min: number | null;
             max: number | null;
         } | null,
+        user_rating_min: null as number | null,
+        average_rating_min: null as number | null,
+        review_recommendation: [] as string[],
     },
 };
 const activeFilters = ref(defaultRefinements);
@@ -272,6 +298,22 @@ const refineStrength = computed(() => {
     });
 });
 
+const refineRatings = computed(() => {
+    return [1, 2, 3, 4, 5].map((rating) => ({
+        id: rating,
+        value: rating,
+        name: ">= " + "★".repeat(rating),
+    }));
+});
+
+const refineRecommendations = computed(() => {
+    return [
+        { id: "avoid", value: "avoid", name: t("review.recommendation-avoid") },
+        { id: "decent", value: "decent", name: t("review.recommendation-decent") },
+        { id: "recommend", value: "recommend", name: t("review.recommendation-recommend") },
+    ];
+});
+
 const totalActiveRefinements = computed(() => {
     let total = 0;
 
@@ -285,6 +327,10 @@ const totalActiveRefinements = computed(() => {
         }
 
         if (typeof element == "string" && element && element.length > 0) {
+            return total++;
+        }
+
+        if (typeof element == "number") {
             return total++;
         }
 
@@ -338,6 +384,9 @@ function queryToState() {
                           max: queryString.filter.strength_max ? Number(queryString.filter.strength_max) : null,
                       }
                     : null,
+            user_rating_min: queryString.filter?.user_rating_min ? Number(queryString.filter.user_rating_min) : null,
+            average_rating_min: queryString.filter?.average_rating_min ? Number(queryString.filter.average_rating_min) : null,
+            review_recommendation: queryString.filter?.review_recommendation ? String(queryString.filter.review_recommendation).split(",") : [],
         },
     };
 }
@@ -361,6 +410,9 @@ function stateToQuery(): IngredientQuery {
         complex: activeFilters.value.filter.complex || undefined,
         strength_min: activeFilters.value.filter.strength?.min || undefined,
         strength_max: activeFilters.value.filter.strength?.max || undefined,
+        user_rating_min: activeFilters.value.filter.user_rating_min ?? undefined,
+        average_rating_min: activeFilters.value.filter.average_rating_min ?? undefined,
+        review_recommendation: activeFilters.value.filter.review_recommendation.length > 0 ? activeFilters.value.filter.review_recommendation.join(",") : undefined,
     };
 
     return query;
@@ -419,7 +471,7 @@ function debounceIngredientSearch() {
 }
 
 function clearRefinements() {
-    activeFilters.value = { ...defaultRefinements };
+    activeFilters.value = structuredClone(defaultRefinements);
     sortDir.value = "";
     meta.value = null;
     updateRouterPath();

@@ -8,7 +8,6 @@ import InstantSearch from "vue-instantsearch/vue3/es";
 import router from "./router";
 import dialog from "./components/Dialog/plugin";
 import "./assets/main.css";
-import "./custom/exactIngredientMatching";
 import AppState from "./AppState";
 import { init } from "@plausible-analytics/tracker";
 import { registerSW } from "virtual:pwa-register";
@@ -26,74 +25,6 @@ import zh_CN from "./locales/zh-CN";
 import nl_NL from "./locales/nl-NL";
 import cs_CZ from "./locales/cs-CZ";
 import fi_FI from "./locales/fi-FI";
-
-const JSON_IMPORT_METADATA_KEY = "jsonImportMetadata";
-
-router.beforeEach((to, from) => {
-    // CocktailForm redirects to the cocktail slug after an update. If the name was
-    // changed, that slug is stale because the backend may have generated a new one.
-    // The edit route already carries the stable numeric cocktail id, so prefer it
-    // whenever we return from an existing cocktail edit to the detail page.
-    if (from.name === "cocktails.form" && to.name === "cocktails.show" && from.query.id) {
-        const editId = Array.isArray(from.query.id) ? from.query.id[0] : from.query.id;
-        if (editId && String(to.params.id) !== String(editId)) {
-            return {
-                name: "cocktails.show",
-                params: { ...to.params, id: editId },
-                query: to.query,
-                hash: to.hash,
-            };
-        }
-    }
-
-    if (to.name !== "cocktails.form") {
-        return true;
-    }
-
-    const metadataRaw = sessionStorage.getItem(JSON_IMPORT_METADATA_KEY);
-    const scrapeResultRaw = sessionStorage.getItem("scrapeResult");
-
-    if (!metadataRaw || !scrapeResultRaw) {
-        return true;
-    }
-
-    try {
-        const metadata = JSON.parse(metadataRaw) as {
-            name?: string;
-            author?: string | null;
-            year?: string | null;
-            parent?: string | null;
-            parent_id?: number | null;
-        };
-        const scrapeResult = JSON.parse(scrapeResultRaw);
-
-        if (metadata.name && scrapeResult.name === metadata.name) {
-            if (metadata.author) {
-                scrapeResult.author = metadata.author;
-            }
-
-            if (metadata.year) {
-                scrapeResult.year = metadata.year;
-            }
-
-            if (metadata.parent && metadata.parent_id) {
-                scrapeResult.parent_cocktail = {
-                    id: metadata.parent_id,
-                    name: metadata.parent,
-                    slug: "",
-                };
-            }
-
-            sessionStorage.setItem("scrapeResult", JSON.stringify(scrapeResult));
-        }
-    } catch (error) {
-        console.warn("Unable to apply extended JSON import metadata", error);
-    } finally {
-        sessionStorage.removeItem(JSON_IMPORT_METADATA_KEY);
-    }
-
-    return true;
-});
 
 registerSW({ immediate: true });
 registerSwiperElements();

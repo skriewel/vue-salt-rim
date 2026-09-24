@@ -1,7 +1,6 @@
 <template>
     <div class="cocktail-tap-widget">
         <button
-            ref="tapButton"
             type="button"
             class="button button--outline button--has-icon cocktail-tap-widget__action"
             :disabled="isSaving"
@@ -60,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import SaltRimDialog from "@/components/Dialog/SaltRimDialog.vue";
 import CocktailTapClient, { type CocktailTap, type CocktailTapList } from "@/api/CocktailTapClient";
 import { useSaltRimToast } from "@/composables/toast";
@@ -76,17 +75,8 @@ const showHistory = ref(false);
 const newTapDate = ref("");
 const editingTapId = ref<number | null>(null);
 const editingDate = ref("");
-const tapButton = ref<HTMLButtonElement | null>(null);
 
-onMounted(async () => {
-    await nextTick();
-    const actions = document.querySelector<HTMLElement>(".cocktail-details__actions");
-    if (actions && tapButton.value) {
-        actions.style.gridTemplateColumns = "repeat(4, 1fr)";
-        actions.insertBefore(tapButton.value, actions.lastElementChild);
-    }
-    await fetchTaps();
-});
+onMounted(fetchTaps);
 
 async function fetchTaps() {
     isLoading.value = true;

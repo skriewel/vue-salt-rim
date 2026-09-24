@@ -161,6 +161,10 @@
                     <input id="author" v-model="cocktail.author" class="form-input" type="text" :placeholder="t('placeholder.author')" />
                 </div>
                 <div class="form-group">
+                    <label class="form-label" for="origin-bar">{{ t("origin-bar.title") }}:</label>
+                    <input id="origin-bar" v-model="cocktail.origin_bar" class="form-input" type="text" :placeholder="t('placeholder.origin-bar')" />
+                </div>
+                <div class="form-group">
                     <label class="form-label" for="year">{{ t("year") }}:</label>
                     <input id="year" v-model="cocktail.year" class="form-input" type="text" :placeholder="t('placeholder.cocktail-year')" />
                 </div>
@@ -505,6 +509,7 @@ async function submit() {
         source: cocktail.value.source,
         publication: cocktail.value.publication,
         author: cocktail.value.author,
+        origin_bar: cocktail.value.origin_bar,
         cocktail_method_id: cocktail.value.method?.id,
         utensils: selectedUtensilIds.value,
         parent_cocktail_id: cocktail.value.parent_cocktail ? cocktail.value.parent_cocktail.id : null,
@@ -549,7 +554,7 @@ async function submit() {
             .then(() => {
                 isLoading.value = false;
                 toast.default(t("cocktail.update-success"));
-                router.push({ name: "cocktails.show", params: { id: cocktail.value.slug } });
+                router.push({ name: "cocktails.show", params: { id: cocktail.value.id } });
             })
             .catch((e) => {
                 toast.error(e.message);
