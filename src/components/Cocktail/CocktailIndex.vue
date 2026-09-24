@@ -147,7 +147,15 @@
                         id="user-rating"
                         v-model="activeFilters.user_rating_min as any"
                         :title="$t('your-rating')"
-                        :refinements="refineRatings"
+                        :refinements="refineUserRatings"
+                        type="radio"
+                        @change="updateRouterPath"
+                    ></Refinement>
+                    <Refinement
+                        id="last-tapped"
+                        v-model="activeFilters.last_tapped_period as any"
+                        title="Last tapped"
+                        :refinements="refineLastTapped"
                         type="radio"
                         @change="updateRouterPath"
                     ></Refinement>
@@ -185,6 +193,7 @@
                         <option disabled>{{ $t("sort") }}:</option>
                         <option value="name">{{ $t("name") }}</option>
                         <option value="created_at">{{ $t("date-added") }}</option>
+                        <option value="last_tapped_on">Last tapped</option>
                         <option value="favorited_at">{{ $t("date-favorited") }}</option>
                         <option value="missing_bar_ingredients">{{ $t("missing-ingredients") }} ({{ $t("bars.bar") }})</option>
                         <option value="total_ingredients">{{ $t("total.ingredients") }}</option>
@@ -339,7 +348,7 @@ interface ActiveFilters {
     cocktail_method_id: string[];
     main_ingredient_id: string[];
     collection_id: string[];
-    user_rating_min: number | null;
+    user_rating_min: number | string | null;
     average_rating_min: number | null;
     abv: { min: number | null; max: number | null } | null;
     year_min: number | null;
@@ -352,6 +361,7 @@ interface ActiveFilters {
     author: string[];
     publication: string[];
     favorited_by_user: string[];
+    last_tapped_period: string | null;
     ignore_ingredients: string[];
     specific_ingredients: string[];
     ingredient_id: string[];
@@ -441,6 +451,7 @@ const activeFilters = ref<ActiveFilters>({
     author: [],
     publication: [],
     favorited_by_user: [],
+    last_tapped_period: null,
     ignore_ingredients: [],
     specific_ingredients: [],
     ingredient_id: [],
@@ -505,6 +516,21 @@ const refineRatings = computed(() => {
         name: ">= " + "★".repeat(r),
     }));
 });
+
+const refineUserRatings = computed(() => [
+    { id: "none", value: "none", name: "No rating" },
+    ...refineRatings.value,
+]);
+
+const refineLastTapped = computed(() => [
+    { id: "today", value: "today", name: "Today" },
+    { id: "7d", value: "7d", name: "Last 7 days" },
+    { id: "30d", value: "30d", name: "Last 30 days" },
+    { id: "3m", value: "3m", name: "Last 3 months" },
+    { id: "12m", value: "12m", name: "Last 12 months" },
+    { id: "older12m", value: "older12m", name: "More than 12 months ago" },
+    { id: "never", value: "never", name: "Never" },
+]);
 
 const refineMainIngredients = computed(() => {
     return availableRefinements.value.main_ingredients.map((i: any) => ({
@@ -617,6 +643,7 @@ function initializeGlobalRefinements() {
     ];
 
     availableRefinements.value.total_ingredients = [
+        { name: "≤ " + t("n-ingredients", 3), active: false, id: "max3" },
         { name: ">= " + t("n-ingredients", 3), active: false, id: "3" },
         { name: ">= " + t("n-ingredients", 5), active: false, id: "5" },
         { name: ">= " + t("n-ingredients", 7), active: false, id: "7" },
@@ -731,6 +758,59 @@ function handlePageChange(toPage: number) {
     updateRouterPath();
 }
 
+function formatLocalDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function shiftedDate({ days = 0, months = 0 }: { days?: number; months?: number }): string {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    if (months) date.setMonth(date.getMonth() - months);
+    if (days) date.setDate(date.getDate() - days);
+    return formatLocalDate(date);
+}
+
+function tapFiltersForPeriod(period: string | null): Record<string, string> {
+    switch (period) {
+        case "today":
+            return { tapped_after: shiftedDate({}) };
+        case "7d":
+            return { tapped_after: shiftedDate({ days: 6 }) };
+        case "30d":
+            return { tapped_after: shiftedDate({ days: 29 }) };
+        case "3m":
+            return { tapped_after: shiftedDate({ months: 3 }) };
+        case "12m":
+            return { tapped_after: shiftedDate({ months: 12 }) };
+        case "older12m":
+            return { tapped_before: shiftedDate({ months: 12 }) };
+        case "never":
+            return { never_tapped: "true" };
+        default:
+            return {};
+    }
+}
+
+function tapPeriodFromFilters(filter: Record<string, unknown>): string | null {
+    if (String(filter.never_tapped ?? "") === "true" || String(filter.never_tapped ?? "") === "1") return "never";
+    if (filter.tapped_before && !filter.tapped_after) return "older12m";
+    if (!filter.tapped_after) return null;
+
+    const after = String(filter.tapped_after);
+    const periods: Record<string, string> = {
+        today: shiftedDate({}),
+        "7d": shiftedDate({ days: 6 }),
+        "30d": shiftedDate({ days: 29 }),
+        "3m": shiftedDate({ months: 3 }),
+        "12m": shiftedDate({ months: 12 }),
+    };
+
+    return Object.entries(periods).find(([, value]) => value === after)?.[0] ?? null;
+}
+
 function queryToState() {
     const state = qs.parse(window.location.search.replace(/^\?/, "")) as ServerQueryFilters & { inventory?: string; inventory_id?: string };
 
@@ -759,6 +839,7 @@ function queryToState() {
     activeFilters.value.ingredient_id = state.filter && state.filter.ingredient_id ? String(state.filter.ingredient_id).split(",") : [];
     activeFilters.value.ingredient_substitute_id = state.filter && state.filter.ingredient_substitute_id ? String(state.filter.ingredient_substitute_id).split(",") : [];
     activeFilters.value.user_rating_min = state.filter && state.filter.user_rating_min ? state.filter.user_rating_min : null;
+    activeFilters.value.last_tapped_period = tapPeriodFromFilters((state.filter ?? {}) as Record<string, unknown>);
     activeFilters.value.average_rating_min = state.filter && state.filter.average_rating_min ? state.filter.average_rating_min : null;
     searchQuery.value = state.filter && state.filter.name ? state.filter.name : null;
     if (state.filter && (state.filter.abv_min || state.filter.abv_max)) {
@@ -819,6 +900,7 @@ function stateToQuery() {
         author: activeFilters.value.author.length > 0 ? activeFilters.value.author.join(",") : null,
         publication: activeFilters.value.publication.length > 0 ? activeFilters.value.publication.join(",") : null,
         favorited_by_user: activeFilters.value.favorited_by_user.length > 0 ? activeFilters.value.favorited_by_user.join(",") : null,
+        ...tapFiltersForPeriod(activeFilters.value.last_tapped_period),
         abv_min: activeFilters.value.abv ? activeFilters.value.abv.min : null,
         abv_max: activeFilters.value.abv ? activeFilters.value.abv.max : null,
         year_min: activeFilters.value.year_min,
@@ -888,6 +970,7 @@ function clearRefinements() {
         author: [],
         publication: [],
         favorited_by_user: [],
+        last_tapped_period: null,
         ignore_ingredients: [],
         specific_ingredients: [],
         ingredient_id: [],
