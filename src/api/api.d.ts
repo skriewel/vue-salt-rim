@@ -2748,6 +2748,11 @@ export interface components {
              */
             source: string | null;
             /**
+             * @description Recipe publication
+             * @example The PDT Cocktail Book
+             */
+            publication: string | null;
+            /**
              * @description Public ID of the cocktail
              * @example public-id-1
              */
@@ -4142,6 +4147,7 @@ export interface components {
             description?: string | null;
             /** @example Source of the recipe */
             source?: string | null;
+            publication?: string | null;
             /** @example Garnish */
             garnish?: string | null;
             /** @example 1 */
@@ -6161,6 +6167,8 @@ export interface operations {
                     created_user_id?: string;
                     /** @description Filter by cocktail author name(s). Comma separated list of author names. Exact match. */
                     author?: string;
+                    /** @description Filter by recipe publication (partial match) */
+                    publication?: string;
                     /** @description Filter by glass ID(s) */
                     glass_id?: string;
                     /** @description Filter by cocktail method ID(s) */
@@ -6281,6 +6289,9 @@ export interface operations {
                             total?: number;
                             filters?: {
                                 authors: {
+                                    name: string;
+                                }[];
+                                publications: {
                                     name: string;
                                 }[];
                             };
