@@ -549,7 +549,7 @@ async function submit() {
             .then(() => {
                 isLoading.value = false;
                 toast.default(t("cocktail.update-success"));
-                router.push({ name: "cocktails.show", params: { id: cocktail.value.slug } });
+                router.push({ name: "cocktails.show", params: { id: cocktail.value.id } });
             })
             .catch((e) => {
                 toast.error(e.message);
