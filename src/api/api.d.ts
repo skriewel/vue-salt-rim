@@ -1244,6 +1244,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ingredients/{id}/ratings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rate ingredient
+         * @description Rate a single ingredient
+         */
+        post: operations["rateIngredient"];
+        /**
+         * Delete ingredient rating
+         * @description Delete current user ingredient rating
+         */
+        delete: operations["deleteIngredientRating"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ingredients/{id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List ingredient reviews
+         * @description List reviews for a single ingredient
+         */
+        get: operations["listIngredientReviews"];
+        put?: never;
+        /**
+         * Create ingredient review
+         * @description Create a review for a single ingredient
+         */
+        post: operations["saveIngredientReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ingredients/{id}/reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update ingredient review
+         * @description Update a review for a single ingredient
+         */
+        put: operations["updateIngredientReview"];
+        post?: never;
+        /**
+         * Delete ingredient review
+         * @description Delete a review for a single ingredient
+         */
+        delete: operations["deleteIngredientReview"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/members": {
         parameters: {
             query?: never;
@@ -2224,6 +2296,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/taste-descriptors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List taste descriptors
+         * @description List taste descriptors for the current bar
+         */
+        get: operations["listTasteDescriptors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/utensils": {
         parameters: {
             query?: never;
@@ -2887,6 +2979,11 @@ export interface components {
              * @example Jerry Thomas
              */
             author?: string | null;
+            /**
+             * @description Historical bar or venue where the cocktail was originally created
+             * @example American Bar, London
+             */
+            origin_bar?: string | null;
         };
         /** @description Collection resource */
         Collection: {
@@ -3297,6 +3394,78 @@ export interface components {
              * @example ml
              */
             units?: string | null;
+            /** @description Rating summary for the ingredient */
+            rating?: {
+                /**
+                 * Format: float
+                 * @description The requesting member rating, or null when unrated
+                 * @example 3.5
+                 */
+                user?: number | null;
+                /**
+                 * Format: float
+                 * @description The average rating rounded to the nearest 0.5
+                 * @example 4.5
+                 */
+                average?: number;
+                /**
+                 * @description The number of ratings
+                 * @example 3
+                 */
+                total_votes?: number;
+            };
+            /** @description Distinct taste descriptors aggregated from the ingredient reviews */
+            taste_descriptors?: components["schemas"]["TasteDescriptor"][];
+        };
+        /** @description Ingredient review resource */
+        IngredientReview: {
+            /**
+             * @description Review ID
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Review text content
+             * @example Smoky and complex.
+             */
+            content: string;
+            /**
+             * @description Author current rating for the ingredient, joined live from ratings
+             * @example 4.5
+             */
+            rating: number | null;
+            /**
+             * @description Optional recommendation verdict
+             * @example recommend
+             * @enum {string|null}
+             */
+            recommendation: "avoid" | "decent" | "recommend" | null;
+            /** @description Taste descriptors attached to the review */
+            taste_descriptors: components["schemas"]["TasteDescriptor"][];
+            author: {
+                /**
+                 * @description Author user ID
+                 * @example 1
+                 */
+                id?: number;
+                /**
+                 * @description Author display name
+                 * @example John Doe
+                 */
+                name?: string;
+            };
+            /**
+             * Format: date-time
+             * @description Creation date and time
+             * @example 2022-01-01T00:00:00+00:00
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Last update date and time
+             * @example 2022-01-02T00:00:00+00:00
+             */
+            updated_at: string | null;
         };
         /** @description Represents an ingredient tree with its children */
         IngredientTree: {
@@ -3898,6 +4067,19 @@ export interface components {
              */
             cocktails_count: number;
         };
+        /** @description Taste descriptor resource */
+        TasteDescriptor: {
+            /**
+             * @description Taste descriptor ID
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Taste descriptor display name
+             * @example Smoky
+             */
+            name: string;
+        };
         /** @description Auth token resource */
         Token: {
             /**
@@ -4166,6 +4348,8 @@ export interface components {
             year?: number | null;
             /** @example Jerry Thomas */
             author?: string | null;
+            /** @example American Bar, London */
+            origin_bar?: string | null;
         };
         CollectionRequest: {
             /**
@@ -4325,6 +4509,22 @@ export interface components {
              * @example ml
              */
             units?: string | null;
+        };
+        IngredientReviewRequest: {
+            /** @example Smoky and complex, great value. */
+            content: string;
+            /**
+             * @example recommend
+             * @enum {string|null}
+             */
+            recommendation?: "avoid" | "decent" | "recommend" | null;
+            /**
+             * @example [
+             *       "Smoky",
+             *       "Peaty"
+             *     ]
+             */
+            taste_descriptors?: string[];
         };
         LoginRequest: {
             /** @example admin@example.com */
@@ -6169,6 +6369,8 @@ export interface operations {
                     author?: string;
                     /** @description Filter by recipe publication (partial match) */
                     publication?: string;
+                    /** @description Filter by origin bar name(s). Comma separated list of origin bar names. Exact match. */
+                    origin_bar?: string;
                     /** @description Filter by glass ID(s) */
                     glass_id?: string;
                     /** @description Filter by cocktail method ID(s) */
@@ -6292,6 +6494,9 @@ export interface operations {
                                     name: string;
                                 }[];
                                 publications: {
+                                    name: string;
+                                }[];
+                                origin_bars: {
                                     name: string;
                                 }[];
                             };
@@ -8568,6 +8773,18 @@ export interface operations {
                      * @description Show only ingredients with strength less than or equal to given value
                      */
                     strength_max?: number;
+                    /**
+                     * Format: float
+                     * @description Show only ingredients the requesting member has rated greater than or equal to given value
+                     */
+                    user_rating_min?: number;
+                    /**
+                     * Format: float
+                     * @description Show only ingredients with an average rating greater than or equal to given value
+                     */
+                    average_rating_min?: number;
+                    /** @description Show only ingredients with a review recommendation in the given comma separated list of `avoid`, `decent`, `recommend` */
+                    review_recommendation?: string;
                     /** @description Show only ingredients that are used as main ingredients in cocktails */
                     main_ingredients?: boolean;
                     /** @description Show only ingredients that can be made with other ingredients */
@@ -9100,6 +9317,388 @@ export interface operations {
                         data: components["schemas"]["IngredientTree"];
                     };
                 };
+            };
+            /** @description You are not authorized for this action. */
+            403: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+            /** @description Resource record not found. */
+            404: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+        };
+    };
+    rateIngredient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Database id of a resource */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Rating value on a 0.5 step (1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0) */
+                    rating?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description You are not authorized for this action. */
+            403: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+            /** @description Resource record not found. */
+            404: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+        };
+    };
+    deleteIngredientRating: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Database id of a resource */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description You are not authorized for this action. */
+            403: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+            /** @description Resource record not found. */
+            404: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+        };
+    };
+    listIngredientReviews: {
+        parameters: {
+            query?: {
+                /** @description Set current page number */
+                page?: number;
+                /** @description Set number of results per page */
+                per_page?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Database id of a resource */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description The data for the current page */
+                        data?: components["schemas"]["IngredientReview"][];
+                        /** @description Links for pagination */
+                        links?: {
+                            /** @description Link to the first page */
+                            first?: string | null;
+                            /** @description Link to the last page */
+                            last?: string | null;
+                            /** @description Link to the previous page */
+                            prev?: string | null;
+                            /** @description Link to the next page */
+                            next?: string | null;
+                        };
+                        meta?: {
+                            /** @description The current page number */
+                            current_page?: number;
+                            /** @description The starting index of the current page */
+                            from?: number;
+                            /** @description The last page number */
+                            last_page?: number;
+                            links?: {
+                                /** @description The URL of the link */
+                                url?: string | null;
+                                /** @description The label of the link */
+                                label?: string | null;
+                                /** @description Whether the link is active */
+                                active?: boolean | null;
+                            }[];
+                            /** @description The path of the current page */
+                            path?: string;
+                            /** @description The number of items per page */
+                            per_page?: number;
+                            /** @description The ending index of the current page */
+                            to?: number;
+                            /** @description The total number of items */
+                            total?: number;
+                        };
+                    };
+                };
+            };
+            /** @description You are not authorized for this action. */
+            403: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+            /** @description Resource record not found. */
+            404: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+        };
+    };
+    saveIngredientReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Database id of a resource */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IngredientReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description You are not authorized for this action. */
+            403: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+            /** @description Resource record not found. */
+            404: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+        };
+    };
+    updateIngredientReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Database id of a resource */
+                id: number;
+                /** @description Database id of a review */
+                reviewId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IngredientReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["IngredientReview"];
+                    };
+                };
+            };
+            /** @description You are not authorized for this action. */
+            403: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+            /** @description Resource record not found. */
+            404: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+        };
+    };
+    deleteIngredientReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Database id of a resource */
+                id: number;
+                /** @description Database id of a review */
+                reviewId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description You are not authorized for this action. */
             403: {
@@ -12630,6 +13229,56 @@ export interface operations {
             };
             /** @description Resource record not found. */
             404: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["APIError"];
+                    };
+                };
+            };
+        };
+    };
+    listTasteDescriptors: {
+        parameters: {
+            query?: {
+                /** @description Filter descriptors by attributes. */
+                filter?: {
+                    /** @description Filter by descriptor name (case-insensitive partial match) */
+                    name?: string;
+                };
+            };
+            header?: {
+                /** @description Database id of a bar. */
+                "Bar-Assistant-Bar-Id"?: number;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    /** @description Max number of attempts. */
+                    "x-ratelimit-limit"?: number;
+                    /** @description Remaining number of attempts. */
+                    "x-ratelimit-remaining"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["TasteDescriptor"][];
+                    };
+                };
+            };
+            /** @description You are not authorized for this action. */
+            403: {
                 headers: {
                     /** @description Max number of attempts. */
                     "x-ratelimit-limit"?: number;

@@ -83,6 +83,14 @@
                         @change="updateRouterPath"
                     ></Refinement>
                     <Refinement
+                        id="origin-bar"
+                        v-model="activeFilters.origin_bar"
+                        :searchable="true"
+                        :title="$t('origin-bar.title')"
+                        :refinements="refineOriginBars"
+                        @change="updateRouterPath"
+                    ></Refinement>
+                    <Refinement
                         id="favorited-by-user"
                         v-model="activeFilters.favorited_by_user"
                         :searchable="true"
@@ -360,6 +368,7 @@ interface ActiveFilters {
     created_user_id: string[];
     author: string[];
     publication: string[];
+    origin_bar: string[];
     favorited_by_user: string[];
     last_tapped_period: string | null;
     ignore_ingredients: string[];
@@ -385,6 +394,7 @@ interface AvailableRefinements {
     members: any[];
     authors: { name: string }[];
     publications: { name: string }[];
+    origin_bars: { name: string }[];
 }
 
 const route = useRoute();
@@ -424,6 +434,7 @@ const availableRefinements = ref<AvailableRefinements>({
     members: [],
     authors: [],
     publications: [],
+    origin_bars: [],
 });
 
 const activeFilters = ref<ActiveFilters>({
@@ -450,6 +461,7 @@ const activeFilters = ref<ActiveFilters>({
     created_user_id: [],
     author: [],
     publication: [],
+    origin_bar: [],
     favorited_by_user: [],
     last_tapped_period: null,
     ignore_ingredients: [],
@@ -602,6 +614,14 @@ const refinePublications = computed(() => {
     }));
 });
 
+const refineOriginBars = computed(() => {
+    return availableRefinements.value.origin_bars.map((originBar: any) => ({
+        id: originBar.name,
+        value: originBar.name,
+        name: originBar.name,
+    }));
+});
+
 const currentCocktailIds = computed(() => {
     return cocktails.value.map((c) => c.id);
 });
@@ -744,6 +764,7 @@ function refreshCocktails() {
             meta.value = resp?.meta;
             availableRefinements.value.authors = resp?.meta?.filters?.authors ?? [];
             availableRefinements.value.publications = resp?.meta?.filters?.publications ?? [];
+            availableRefinements.value.origin_bars = resp?.meta?.filters?.origin_bars ?? [];
             isLoading.value = false;
         })
         .catch((e) => {
@@ -823,6 +844,7 @@ function queryToState() {
     activeFilters.value.created_user_id = state.filter && state.filter.created_user_id ? String(state.filter.created_user_id).split(",") : [];
     activeFilters.value.author = state.filter && state.filter.author ? String(state.filter.author).split(",") : [];
     activeFilters.value.publication = state.filter && state.filter.publication ? String(state.filter.publication).split(",") : [];
+    activeFilters.value.origin_bar = state.filter && state.filter.origin_bar ? String(state.filter.origin_bar).split(",") : [];
     activeFilters.value.favorited_by_user = state.filter && state.filter.favorited_by_user ? String(state.filter.favorited_by_user).split(",") : [];
     activeFilters.value.on_shelf = String(state.inventory ?? "") === "1";
     activeFilters.value.bar_shelf = state.filter && state.filter.bar_shelf ? state.filter.bar_shelf : null;
@@ -899,6 +921,7 @@ function stateToQuery() {
         created_user_id: activeFilters.value.created_user_id.length > 0 ? activeFilters.value.created_user_id.join(",") : null,
         author: activeFilters.value.author.length > 0 ? activeFilters.value.author.join(",") : null,
         publication: activeFilters.value.publication.length > 0 ? activeFilters.value.publication.join(",") : null,
+        origin_bar: activeFilters.value.origin_bar.length > 0 ? activeFilters.value.origin_bar.join(",") : null,
         favorited_by_user: activeFilters.value.favorited_by_user.length > 0 ? activeFilters.value.favorited_by_user.join(",") : null,
         ...tapFiltersForPeriod(activeFilters.value.last_tapped_period),
         abv_min: activeFilters.value.abv ? activeFilters.value.abv.min : null,
@@ -969,6 +992,7 @@ function clearRefinements() {
         created_user_id: [],
         author: [],
         publication: [],
+        origin_bar: [],
         favorited_by_user: [],
         last_tapped_period: null,
         ignore_ingredients: [],

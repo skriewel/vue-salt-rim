@@ -7,6 +7,7 @@ import { useI18n } from "vue-i18n";
 import { useTitle } from "@/composables/title";
 import { useSaltRimToast } from "@/composables/toast";
 import { useConfirm } from "@/composables/confirm";
+import { useRecipeIssue } from "@/composables/useRecipeIssue";
 import BarAssistantClient from "@/api/BarAssistantClient";
 import PageHeader from "@/components/PageHeader.vue";
 import SimilarCocktails from "@/components/Cocktail/SimilarCocktails.vue";
@@ -33,6 +34,8 @@ import UnitConverter from "@/components/Units/UnitConverter.vue";
 import UnitPicker from "@/components/Units/UnitPicker.vue";
 import WakeLockToggle from "../WakeLockToggle.vue";
 import IconMore from "../Icons/IconMore.vue";
+import IconExternal from "../Icons/IconExternal.vue";
+import SaltRimSpinner from "../SaltRimSpinner.vue";
 import CocktailIngredientView from "./CocktailIngredient.vue";
 import CocktailVarieties from "./CocktailVarieties.vue";
 import MenuAddDialog from "../Menu/MenuAddDialog.vue";
@@ -53,6 +56,7 @@ const route = useRoute();
 const router = useRouter();
 const toast = useSaltRimToast();
 const confirm = useConfirm();
+const { isLoading: isLoadingSuggestImprovement, suggestImprovement } = useRecipeIssue();
 const isLoading = ref(false);
 const isLoadingNotes = ref(false);
 const isLoadingPrices = ref(false);
@@ -241,9 +245,7 @@ const currentUserReview = computed(() => {
 });
 
 const sortedReviews = computed(() => {
-    const otherReviews = reviews.value
-        .filter((r) => r.author.id !== appState.user.id)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const otherReviews = reviews.value.filter((r) => r.author.id !== appState.user.id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return currentUserReview.value ? [currentUserReview.value, ...otherReviews] : otherReviews;
 });
@@ -323,6 +325,14 @@ function shareFromFormat(format: string) {
             },
         );
     });
+}
+
+async function onSuggestImprovement() {
+    const error = await suggestImprovement(cocktail.value.slug, currentUnit.value);
+
+    if (error) {
+        toast.error(t("suggest-improvement-error"));
+    }
 }
 
 function favorite() {
@@ -631,7 +641,11 @@ fetchShoppingList();
                             <SaltRimDialog v-if="cocktail.access && cocktail.access.can_add_note && !currentUserReview" v-model="showReviewDialog">
                                 <template #trigger>
                                     <a class="dropdown-menu__item" href="#" @click.prevent="showReviewDialog = true">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14V16C8.68629 16 6 18.6863 6 22H4C4 17.5817 7.58172 14 12 14ZM12 13C8.685 13 6 10.315 6 7C6 3.685 8.685 1 12 1C15.315 1 18 3.685 18 7C18 10.315 15.315 13 12 13ZM12 11C14.21 11 16 9.21 16 7C16 4.79 14.21 3 12 3C9.79 3 8 4.79 8 7C8 9.21 9.79 11 12 11ZM18 21.5L15.0611 23.0451L15.6224 19.7725L13.2447 17.4549L16.5305 16.9775L18 14L19.4695 16.9775L22.7553 17.4549L20.3776 19.7725L20.9389 23.0451L18 21.5Z"></path></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M12 14V16C8.68629 16 6 18.6863 6 22H4C4 17.5817 7.58172 14 12 14ZM12 13C8.685 13 6 10.315 6 7C6 3.685 8.685 1 12 1C15.315 1 18 3.685 18 7C18 10.315 15.315 13 12 13ZM12 11C14.21 11 16 9.21 16 7C16 4.79 14.21 3 12 3C9.79 3 8 4.79 8 7C8 9.21 9.79 11 12 11ZM18 21.5L15.0611 23.0451L15.6224 19.7725L13.2447 17.4549L16.5305 16.9775L18 14L19.4695 16.9775L22.7553 17.4549L20.3776 19.7725L20.9389 23.0451L18 21.5Z"
+                                            ></path>
+                                        </svg>
                                         {{ t("review.write") }}
                                     </a>
                                 </template>
@@ -644,6 +658,11 @@ fetchShoppingList();
                                     />
                                 </template>
                             </SaltRimDialog>
+                            <a class="dropdown-menu__item" href="#" @click.prevent="onSuggestImprovement">
+                                <SaltRimSpinner v-if="isLoadingSuggestImprovement" :size="18" />
+                                <IconExternal v-else width="18" height="18" />
+                                {{ t("suggest-improvement") }}
+                            </a>
                             <hr v-if="cocktail.access && cocktail.access.can_delete" class="dropdown-menu__separator" />
                             <a v-if="cocktail.access && cocktail.access.can_delete" class="dropdown-menu__item" href="javascript:;" @click.prevent="deleteCocktail">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
