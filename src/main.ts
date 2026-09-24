@@ -8,7 +8,6 @@ import InstantSearch from "vue-instantsearch/vue3/es";
 import router from "./router";
 import dialog from "./components/Dialog/plugin";
 import "./assets/main.css";
-import "./custom/exactIngredientMatching";
 import AppState from "./AppState";
 import { init } from "@plausible-analytics/tracker";
 import { registerSW } from "virtual:pwa-register";
