@@ -41,6 +41,7 @@ import CocktailVarieties from "./CocktailVarieties.vue";
 import MenuAddDialog from "../Menu/MenuAddDialog.vue";
 import CocktailRecipeScaler from "./../Cocktail/CocktailRecipeScaler.vue";
 import CocktailDetailsFacts from "./CocktailDetailsFacts.vue";
+import CocktailTapButton from "./CocktailTapButton.vue";
 
 type Cocktail = components["schemas"]["Cocktail"];
 type Bar = components["schemas"]["Bar"];
@@ -445,6 +446,7 @@ fetchShoppingList();
                             />
                         </svg>
                     </button>
+                    <CocktailTapButton :cocktail-id="cocktail.id" />
                     <Dropdown>
                         <template #default="{ toggleDropdown }">
                             <button type="button" class="button button--outline button--has-icon" @click="toggleDropdown">
@@ -895,7 +897,7 @@ swiper-container {
     right: 20px;
     top: -25px;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     column-gap: var(--gap-size-1);
     z-index: 1;
 }
