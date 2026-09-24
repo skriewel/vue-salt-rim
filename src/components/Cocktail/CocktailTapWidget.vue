@@ -1,15 +1,5 @@
 <template>
     <div class="cocktail-tap-widget">
-        <button
-            type="button"
-            class="button button--outline button--has-icon cocktail-tap-widget__action"
-            :disabled="isSaving"
-            :title="isSaving ? 'Tapping…' : 'Tap cocktail'"
-            :aria-label="isSaving ? 'Tapping cocktail' : 'Tap cocktail'"
-            @click="tapToday"
-        >
-            <IconCocktail />
-        </button>
         <div class="cocktail-tap-widget__summary">
             <span class="cocktail-tap-widget__count">{{ taps.meta.total }}×</span>
             <SaltRimDialog v-model="showHistory" @dialog-opened="fetchTaps">
@@ -63,7 +53,7 @@ import { onMounted, ref } from "vue";
 import SaltRimDialog from "@/components/Dialog/SaltRimDialog.vue";
 import CocktailTapClient, { type CocktailTap, type CocktailTapList } from "@/api/CocktailTapClient";
 import { useSaltRimToast } from "@/composables/toast";
-import IconCocktail from "@/components/Icons/IconCocktail.vue";
+import { cocktailTapBus } from "@/composables/eventBus";
 
 const props = defineProps<{ cocktailId: number }>();
 const toast = useSaltRimToast();
@@ -78,6 +68,12 @@ const editingDate = ref("");
 
 onMounted(fetchTaps);
 
+cocktailTapBus.on((cocktailId) => {
+    if (cocktailId === props.cocktailId) {
+        fetchTaps();
+    }
+});
+
 async function fetchTaps() {
     isLoading.value = true;
     try {
@@ -86,19 +82,6 @@ async function fetchTaps() {
         toast.error(e.message ?? "Could not load taps");
     } finally {
         isLoading.value = false;
-    }
-}
-
-async function tapToday() {
-    isSaving.value = true;
-    try {
-        await CocktailTapClient.create(props.cocktailId);
-        await fetchTaps();
-        toast.default("Cocktail tapped");
-    } catch (e: any) {
-        toast.error(e.message ?? "Could not save tap");
-    } finally {
-        isSaving.value = false;
     }
 }
 
@@ -157,11 +140,6 @@ function formatDate(date: string): string {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-}
-
-.cocktail-tap-widget__action :deep(svg) {
-    width: 24px;
-    height: 24px;
 }
 
 .cocktail-tap-widget__summary {
