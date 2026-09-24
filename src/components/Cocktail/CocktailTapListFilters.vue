@@ -197,7 +197,7 @@ function installExtraExistingFilterOptions(): boolean {
 
             const input = document.createElement("input");
             input.type = "radio";
-            input.name = anchor.name;
+            input.name = anchor?.name ?? "total_ingredients";
             input.id = "custom-total-ingredients-max3";
             input.value = "max3";
             input.addEventListener("change", () => {
@@ -222,7 +222,7 @@ function installExtraExistingFilterOptions(): boolean {
 
             const input = document.createElement("input");
             input.type = "radio";
-            input.name = anchor.name;
+            input.name = anchor?.name ?? "user_rating_min";
             input.id = "custom-user-rating-none";
             input.value = "none";
             input.addEventListener("change", () => {
@@ -377,4 +377,4 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<template></template>
+<template><span v-if="false" /></template>
