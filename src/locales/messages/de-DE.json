@@ -20,6 +20,19 @@
         "recommended-cocktails": "Cocktail Empfehlungen",
         "locked_cocktails": "Cocktails, die ich nicht machen kann"
     },
+    "shelf-transfer": {
+        "title": "Regalübernahme",
+        "description": "Übernimmt alle Zutaten aus einem deiner persönlichen Member-Regale in das gemeinsame Barregal. Bereits vorhandene Zutaten bleiben erhalten; es wird nichts entfernt.",
+        "source": "Member-Regal",
+        "ingredient-count": "{count} Zutaten",
+        "copy": "In Barregal übernehmen",
+        "confirm": "Alle {count} Zutaten aus „{shelf}“ in das Barregal „{bar}“ übernehmen? Bereits vorhandene Zutaten bleiben erhalten.",
+        "success": "{count} Zutaten aus „{shelf}“ wurden in das Barregal übernommen.",
+        "empty": "Dieses Member-Regal enthält keine Zutaten.",
+        "no-shelves": "Für diese Bar sind keine persönlichen Member-Regale verfügbar.",
+        "load-error": "Member-Regale konnten nicht geladen werden.",
+        "copy-error": "Member-Regal konnte nicht in das Barregal übernommen werden."
+    },
     "server-error": "Unerwarteter Serverfehler",
     "ingredient": {
         "title": "Zutat",
