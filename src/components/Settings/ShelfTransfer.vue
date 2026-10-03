@@ -16,10 +16,7 @@
                     <label class="form-label" for="shelf-transfer-source">{{ $t("shelf-transfer.source") }}:</label>
                     <select id="shelf-transfer-source" v-model="selectedInventoryId" class="form-select">
                         <option v-for="inventory in inventories" :key="inventory.id" :value="inventory.id">
-                            {{ inventory.name }}
-                            <template v-if="inventory.inventory_ingredients_count !== undefined">
-                                ({{ $t("shelf-transfer.ingredient-count", { count: inventory.inventory_ingredients_count }) }})
-                            </template>
+                            {{ inventoryLabel(inventory) }}
                         </option>
                     </select>
                 </div>
@@ -70,6 +67,14 @@ const selectedInventory = computed(() => inventories.value.find((inventory) => i
 
 useTitle(t("shelf-transfer.title"));
 
+function inventoryLabel(inventory: MemberInventory): string {
+    if (inventory.inventory_ingredients_count === undefined) {
+        return inventory.name;
+    }
+
+    return `${inventory.name} (${t("shelf-transfer.ingredient-count", { count: inventory.inventory_ingredients_count })})`;
+}
+
 loadInventories();
 
 async function loadInventories() {
@@ -106,7 +111,7 @@ function transferShelf() {
         {
             onResolved: (dialog: { close: () => void }) => {
                 dialog.close();
-                copyInventoryToBarShelf(inventory);
+                void copyInventoryToBarShelf(inventory);
             },
         },
     );
