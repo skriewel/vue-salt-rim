@@ -20,6 +20,19 @@
         "recommended-cocktails": "Recommended cocktails",
         "locked_cocktails": "Cocktails I can't make"
     },
+    "shelf-transfer": {
+        "title": "Shelf transfer",
+        "description": "Copy all ingredients from one of your personal member shelves to the shared bar shelf. Existing bar shelf ingredients are kept and nothing is removed.",
+        "source": "Member shelf",
+        "ingredient-count": "{count} ingredients",
+        "copy": "Copy to bar shelf",
+        "confirm": "Copy all {count} ingredients from \"{shelf}\" to the bar shelf \"{bar}\"? Existing bar shelf ingredients will be kept.",
+        "success": "Copied {count} ingredients from \"{shelf}\" to the bar shelf.",
+        "empty": "This member shelf does not contain any ingredients.",
+        "no-shelves": "No personal member shelves are available for this bar.",
+        "load-error": "Unable to load member shelves.",
+        "copy-error": "Unable to copy member shelf to bar shelf."
+    },
     "server-error": "Unexpected server error",
     "ingredient": {
         "title": "Ingredient",

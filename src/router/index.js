@@ -180,6 +180,12 @@ const router = createRouter({
                     meta: { requiresBar: true },
                 },
                 {
+                    path: "/settings/shelf-transfer",
+                    name: "settings.shelf-transfer",
+                    component: () => import("../views/SettingsShelfTransferView.vue"),
+                    meta: { requiresBar: true },
+                },
+                {
                     path: "/settings/tags",
                     name: "settings.tags",
                     component: () => import("../views/SettingsTagsView.vue"),
