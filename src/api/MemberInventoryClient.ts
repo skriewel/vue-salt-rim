@@ -3,7 +3,7 @@ import AppState from "@/AppState";
 export interface MemberInventory {
     id: number;
     name: string;
-    inventory_ingredients_count?: number;
+    ingredient_count?: number;
 }
 
 export interface MemberInventoryIngredient {
