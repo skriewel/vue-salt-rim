@@ -10,6 +10,7 @@
         <template v-if="appState.isAdmin()">
             <h3 class="page-subtitle">{{ appState.bar.name }}</h3>
             <RouterLink :to="{ name: 'settings.users' }">{{ t("users.title") }}</RouterLink>
+            <RouterLink :to="{ name: 'settings.shelf-transfer' }">{{ t("shelf-transfer.title") }}</RouterLink>
             <RouterLink :to="{ name: 'settings.glasses' }">{{ t("glass-type.types") }}</RouterLink>
             <RouterLink :to="{ name: 'settings.tags' }">{{ t("tag.tags") }}</RouterLink>
             <RouterLink :to="{ name: 'settings.utensils' }">{{ t("utensils.title") }}</RouterLink>
