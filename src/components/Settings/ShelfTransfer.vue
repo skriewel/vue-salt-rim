@@ -21,7 +21,7 @@
                     </select>
                 </div>
 
-                <p v-if="selectedInventory?.inventory_ingredients_count === 0" class="form-input-hint">
+                <p v-if="selectedInventory?.ingredient_count === 0" class="form-input-hint">
                     {{ $t("shelf-transfer.empty") }}
                 </p>
 
@@ -29,7 +29,7 @@
                     v-if="inventories.length > 0"
                     type="button"
                     class="button button--dark"
-                    :disabled="isLoading || !selectedInventory || selectedInventory.inventory_ingredients_count === 0"
+                    :disabled="isLoading || !selectedInventory || selectedInventory.ingredient_count === 0"
                     @click="transferShelf"
                 >
                     {{ $t("shelf-transfer.copy") }}
@@ -68,11 +68,11 @@ const selectedInventory = computed(() => inventories.value.find((inventory) => i
 useTitle(t("shelf-transfer.title"));
 
 function inventoryLabel(inventory: MemberInventory): string {
-    if (inventory.inventory_ingredients_count === undefined) {
+    if (inventory.ingredient_count === undefined) {
         return inventory.name;
     }
 
-    return `${inventory.name} (${t("shelf-transfer.ingredient-count", { count: inventory.inventory_ingredients_count })})`;
+    return `${inventory.name} (${t("shelf-transfer.ingredient-count", { count: inventory.ingredient_count })})`;
 }
 
 loadInventories();
@@ -100,7 +100,7 @@ function transferShelf() {
     }
 
     const inventory = selectedInventory.value;
-    const count = inventory.inventory_ingredients_count ?? 0;
+    const count = inventory.ingredient_count ?? 0;
 
     confirm.show(
         t("shelf-transfer.confirm", {
